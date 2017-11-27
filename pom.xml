@@ -36,8 +36,8 @@
         </dependency>
         <dependency>
     <groupId>org.bouncycastle</groupId>
-    <artifactId>bcpg-jdk15</artifactId>
-    <version>1.46</version>
+    <artifactId>bcpg-jdk15on</artifactId>
+    <version>1.58</version>
 </dependency>
         
         		<dependency>
@@ -49,11 +49,13 @@
         <dependency>  
        <groupId>org.bouncycastle</groupId>  
        <artifactId>bcpkix-jdk15on</artifactId>  
-       <version>1.55</version>  
+       <version>1.58</version>  
        
        
        
      </dependency>  
+     
+     
      <!-- https://mvnrepository.com/artifact/joda-time/joda-time -->  
      <dependency>  
        <groupId>joda-time</groupId>  

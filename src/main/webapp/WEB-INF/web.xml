@@ -3,10 +3,7 @@
  "http://java.sun.com/dtd/web-app_2_3.dtd" >
 
 <web-app>
-   <display-name>RESTfulExample</display-name>
-   
-    
-
+   <display-name>CryptoRestfullAPI</display-name>
    
  <servlet>
         <servlet-name>jersey-serlvet</servlet-name>

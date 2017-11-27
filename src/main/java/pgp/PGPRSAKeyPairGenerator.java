@@ -14,17 +14,24 @@ import java.util.Date;
 import java.util.UUID;
 
 import org.bouncycastle.bcpg.ArmoredOutputStream;
+import org.bouncycastle.bcpg.HashAlgorithmTags;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.openpgp.PGPKeyPair;
 import org.bouncycastle.openpgp.PGPPublicKey;
 import org.bouncycastle.openpgp.PGPSecretKey;
 import org.bouncycastle.openpgp.PGPSignature;
+import org.bouncycastle.openpgp.operator.PGPDigestCalculator;
+import org.bouncycastle.openpgp.operator.jcajce.JcaPGPContentSignerBuilder;
+import org.bouncycastle.openpgp.operator.jcajce.JcaPGPDigestCalculatorProviderBuilder;
+import org.bouncycastle.openpgp.operator.jcajce.JcaPGPKeyPair;
+import org.bouncycastle.openpgp.operator.jcajce.JcePBESecretKeyEncryptorBuilder;
 
 import cacerts.Utils;
 
 /**
  * 
- * @author Anish Nath 
- * For Demo Visit https://8gwifi.org
+ * @author Anish Nath For Demo
+ *  Visit https://8gwifi.org
  *
  */
 
@@ -45,8 +52,7 @@ public class PGPRSAKeyPairGenerator {
 
 	}
 
-	private pgppojo exportKeyPair(PublicKey publicKey, PrivateKey privateKey, String identity, char[] passPhrase,
-			final String algo) {
+	private pgppojo exportKeyPair(KeyPair pair, String identity, char[] passPhrase, final String algo) {
 
 		pgppojo pgPpojo = new pgppojo();
 
@@ -57,63 +63,68 @@ public class PGPRSAKeyPairGenerator {
 
 			FileOutputStream out1 = new FileOutputStream(fullPathSecretKey);
 			FileOutputStream out2 = new FileOutputStream(fullPathPublicKey);
-			
-			int PGPEncryptedData=1; //Defaulted to Idea
 
-						
-			if("IDEA".equals(algo))
-			{
-				PGPEncryptedData=1;
-			}
-			
-			if("TRIPLE_DES".equals(algo))
-			{
-				PGPEncryptedData=2;
-			}
-			
-			if("CAST5".equals(algo))
-			{
-				PGPEncryptedData=3;
-			}
-			
-			if("BLOWFISH".equals(algo))
-			{
-				PGPEncryptedData=4;
-			}
-			if("SAFER".equals(algo))
-			{
-				PGPEncryptedData=5;
-			}
-			
-			if("DES".equals(algo))
-			{
-				PGPEncryptedData=5;
-			}
-			
-			if("AES_128".equals(algo))
-			{
-				PGPEncryptedData=7;
-			}
-			
-			if("AES_192".equals(algo))
-			{
-				PGPEncryptedData=8;
-			}
-			
-			if("AES_256".equals(algo))
-			{
-				PGPEncryptedData=9;
-			}
-			
-			if("TWOFISH".equals(algo))
-			{
-				PGPEncryptedData=10;
+			int PGPEncryptedData = 1; // Defaulted to Idea
+
+			if ("IDEA".equals(algo)) {
+				PGPEncryptedData = 1;
 			}
 
+			if ("TRIPLE_DES".equals(algo)) {
+				PGPEncryptedData = 2;
+			}
 
-			PGPSecretKey secretKey = new PGPSecretKey(PGPSignature.DEFAULT_CERTIFICATION, PGPPublicKey.RSA_GENERAL,
-					publicKey, privateKey, new Date(), identity, PGPEncryptedData, passPhrase, null, null,
-					new SecureRandom(), "BC");
+			if ("CAST5".equals(algo)) {
+				PGPEncryptedData = 3;
+			}
+
+			if ("BLOWFISH".equals(algo)) {
+				PGPEncryptedData = 4;
+			}
+			if ("SAFER".equals(algo)) {
+				PGPEncryptedData = 5;
+			}
+
+			if ("DES".equals(algo)) {
+				PGPEncryptedData = 5;
+			}
+
+			if ("AES_128".equals(algo)) {
+				PGPEncryptedData = 7;
+			}
+
+			if ("AES_192".equals(algo)) {
+				PGPEncryptedData = 8;
+			}
+
+			if ("AES_256".equals(algo)) {
+				PGPEncryptedData = 9;
+			}
+
+			if ("TWOFISH".equals(algo)) {
+				PGPEncryptedData = 10;
+			}
+
+			PGPDigestCalculator sha1Calc = new JcaPGPDigestCalculatorProviderBuilder().build()
+					.get(HashAlgorithmTags.SHA1);
+			PGPKeyPair keyPair = new JcaPGPKeyPair(PGPPublicKey.RSA_GENERAL, pair, new Date());
+			PGPSecretKey secretKey = new PGPSecretKey(PGPSignature.DEFAULT_CERTIFICATION, keyPair, identity, sha1Calc,
+					null, null,
+					new JcaPGPContentSignerBuilder(keyPair.getPublicKey().getAlgorithm(), HashAlgorithmTags.SHA1),
+					new JcePBESecretKeyEncryptorBuilder(PGPEncryptedData, sha1Calc).setProvider("BC")
+							.build(passPhrase));
+
+			// PGPSecretKey secretKey = new
+			// PGPSecretKey(PGPSignature.DEFAULT_CERTIFICATION,
+			// PGPPublicKey.RSA_GENERAL,
+			// publicKey, privateKey,
+			// new Date(),
+			// identity,
+			// PGPEncryptedData,
+			// passPhrase,
+			// null,
+			// null,
+			// new SecureRandom(), "BC");
 
 			OutputStream secretOut = new ArmoredOutputStream(out1);
 
@@ -163,93 +174,88 @@ public class PGPRSAKeyPairGenerator {
 		KeyPairGenerator kpg = KeyPairGenerator.getInstance("RSA", "BC");
 		kpg.initialize(this.keysize);
 		KeyPair kp = kpg.generateKeyPair();
-		return exportKeyPair(kp.getPublic(), kp.getPrivate(), identity, passPhrase, algo);
+		return exportKeyPair(kp, identity, passPhrase, algo);
 
 	}
-	
+
 	public static void main(String[] args) throws Exception {
-		
+
 		String identity = "anish";
 		String passPhrase = "8gwifi.org";
-		int keySize=1024;
-		PGPRSAKeyPairGenerator generator  = new PGPRSAKeyPairGenerator(keySize);
+		int keySize = 1024;
+		PGPRSAKeyPairGenerator generator = new PGPRSAKeyPairGenerator(keySize);
 		String algo = "BLOWFISH";
 		System.out.println(generator.genKeyPair(identity, passPhrase.toCharArray(), algo));
-		
-		keySize=1024;
-		generator  = new PGPRSAKeyPairGenerator(keySize);
+
+		keySize = 1024;
+		generator = new PGPRSAKeyPairGenerator(keySize);
 		algo = "AES_256";
 		System.out.println(generator.genKeyPair(identity, passPhrase.toCharArray(), algo));
-		
-		keySize=1024;
-		generator  = new PGPRSAKeyPairGenerator(keySize);
+
+		keySize = 1024;
+		generator = new PGPRSAKeyPairGenerator(keySize);
 		algo = "AES_192";
 		System.out.println(generator.genKeyPair(identity, passPhrase.toCharArray(), algo));
-		
-		keySize=1024;
-		generator  = new PGPRSAKeyPairGenerator(keySize);
+
+		keySize = 1024;
+		generator = new PGPRSAKeyPairGenerator(keySize);
 		algo = "AES_128";
 		System.out.println(generator.genKeyPair(identity, passPhrase.toCharArray(), algo));
-		
-		
-		keySize=2048;
-		generator  = new PGPRSAKeyPairGenerator(keySize);
+
+		keySize = 2048;
+		generator = new PGPRSAKeyPairGenerator(keySize);
 		algo = "BLOWFISH";
 		System.out.println(generator.genKeyPair(identity, passPhrase.toCharArray(), algo));
-		
-		keySize=4098;
-		generator  = new PGPRSAKeyPairGenerator(keySize);
+
+		keySize = 4098;
+		generator = new PGPRSAKeyPairGenerator(keySize);
 		algo = "BLOWFISH";
 		System.out.println(generator.genKeyPair(identity, passPhrase.toCharArray(), algo));
-		
-		keySize=1024;
-		generator  = new PGPRSAKeyPairGenerator(keySize);
+
+		keySize = 1024;
+		generator = new PGPRSAKeyPairGenerator(keySize);
 		algo = "CAST5";
 		System.out.println(generator.genKeyPair(identity, passPhrase.toCharArray(), algo));
-		
-		keySize=2048;
-		generator  = new PGPRSAKeyPairGenerator(keySize);
+
+		keySize = 2048;
+		generator = new PGPRSAKeyPairGenerator(keySize);
 		algo = "CAST5";
 		System.out.println(generator.genKeyPair(identity, passPhrase.toCharArray(), algo));
-		
-		keySize=4098;
-		generator  = new PGPRSAKeyPairGenerator(keySize);
+
+		keySize = 4098;
+		generator = new PGPRSAKeyPairGenerator(keySize);
 		algo = "CAST5";
 		System.out.println(generator.genKeyPair(identity, passPhrase.toCharArray(), algo));
-		
-		keySize=1024;
-		generator  = new PGPRSAKeyPairGenerator(keySize);
+
+		keySize = 1024;
+		generator = new PGPRSAKeyPairGenerator(keySize);
 		algo = "TWOFISH";
 		System.out.println(generator.genKeyPair(identity, passPhrase.toCharArray(), algo));
-		
-		keySize=2048;
-		generator  = new PGPRSAKeyPairGenerator(keySize);
+
+		keySize = 2048;
+		generator = new PGPRSAKeyPairGenerator(keySize);
 		algo = "TWOFISH";
 		System.out.println(generator.genKeyPair(identity, passPhrase.toCharArray(), algo));
-		
-		keySize=4098;
-		generator  = new PGPRSAKeyPairGenerator(keySize);
+
+		keySize = 4098;
+		generator = new PGPRSAKeyPairGenerator(keySize);
 		algo = "TWOFISH";
 		System.out.println(generator.genKeyPair(identity, passPhrase.toCharArray(), algo));
-		
-		keySize=1024;
-		generator  = new PGPRSAKeyPairGenerator(keySize);
+
+		keySize = 1024;
+		generator = new PGPRSAKeyPairGenerator(keySize);
 		algo = "TRIPLE_DES";
 		System.out.println(generator.genKeyPair(identity, passPhrase.toCharArray(), algo));
-		
-		keySize=2048;
-		generator  = new PGPRSAKeyPairGenerator(keySize);
+
+		keySize = 2048;
+		generator = new PGPRSAKeyPairGenerator(keySize);
 		algo = "TRIPLE_DES";
 		System.out.println(generator.genKeyPair(identity, passPhrase.toCharArray(), algo));
-		
-		keySize=4098;
-		generator  = new PGPRSAKeyPairGenerator(keySize);
+
+		keySize = 4098;
+		generator = new PGPRSAKeyPairGenerator(keySize);
 		algo = "TRIPLE_DES";
 		System.out.println(generator.genKeyPair(identity, passPhrase.toCharArray(), algo));
-		
-		
-		
-		
-		
+
 	}
 }

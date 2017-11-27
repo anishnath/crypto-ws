@@ -1,41 +1,42 @@
 package cacerts;
 
-import org.bouncycastle.asn1.ASN1InputStream;
-import org.bouncycastle.asn1.DEROctetString;
-import org.bouncycastle.asn1.x500.X500Name;  
-import org.bouncycastle.asn1.x509.BasicConstraints;  
-import org.bouncycastle.asn1.x509.Extension;  
-import org.bouncycastle.asn1.x509.KeyUsage;
-import org.bouncycastle.cert.CertIOException;
-import org.bouncycastle.cert.X509v3CertificateBuilder;  
-import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;  
-import org.bouncycastle.cert.jcajce.JcaX509v3CertificateBuilder;  
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.bouncycastle.openssl.PEMWriter;
-import org.bouncycastle.operator.OperatorCreationException;  
-import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
-import org.bouncycastle.util.encoders.Base64Encoder;
-import org.bouncycastle.util.io.pem.PemObject;
-import org.bouncycastle.util.io.pem.PemObjectGenerator;
-import org.bouncycastle.util.io.pem.PemWriter;
-import org.joda.time.DateTime;
-
 import java.io.ByteArrayOutputStream;
-import java.io.FileOutputStream;  
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
-import java.io.StringWriter;
-import java.math.BigInteger;  
-import java.security.*;  
-import java.security.cert.CertificateEncodingException;  
-import java.security.cert.CertificateException;  
+import java.math.BigInteger;
+import java.security.InvalidKeyException;
+import java.security.Key;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.SecureRandom;
+import java.security.Security;
+import java.security.SignatureException;
+import java.security.UnrecoverableKeyException;
+import java.security.cert.CertificateEncodingException;
+import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
-import java.util.Base64;
-import java.util.Random;  
+import java.util.Random;
 
-import sun.misc.BASE64Decoder;
+import org.bouncycastle.asn1.ASN1InputStream;
+import org.bouncycastle.asn1.DEROctetString;
+import org.bouncycastle.asn1.x500.X500Name;
+import org.bouncycastle.asn1.x509.BasicConstraints;
+import org.bouncycastle.asn1.x509.Extension;
+import org.bouncycastle.asn1.x509.KeyUsage;
+import org.bouncycastle.cert.X509v3CertificateBuilder;
+import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
+import org.bouncycastle.cert.jcajce.JcaX509v3CertificateBuilder;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.openssl.PEMWriter;
+import org.bouncycastle.operator.OperatorCreationException;
+import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
+import org.joda.time.DateTime;
+
 import sun.misc.BASE64Encoder;
-import sun.misc.IOUtils;
   
   
 public class GenerateCACerts {  
@@ -200,7 +201,7 @@ public class GenerateCACerts {
 			
 		} catch (Exception ex ) 
 		{
-			return null;
+			ex.printStackTrace();
 		}
 		
 		return authorityPOJO;
