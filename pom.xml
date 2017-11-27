@@ -34,10 +34,25 @@
             <artifactId>jersey-client</artifactId>
             <version>RELEASE</version>
         </dependency>
+        <dependency>
+    <groupId>org.bouncycastle</groupId>
+    <artifactId>bcpg-jdk15</artifactId>
+    <version>1.46</version>
+</dependency>
+        
+        		<dependency>
+			<groupId>org.apache.httpcomponents</groupId>
+			<artifactId>httpclient</artifactId>
+			<version>4.5.2</version>
+		</dependency>
+        
         <dependency>  
        <groupId>org.bouncycastle</groupId>  
        <artifactId>bcpkix-jdk15on</artifactId>  
        <version>1.55</version>  
+       
+       
+       
      </dependency>  
      <!-- https://mvnrepository.com/artifact/joda-time/joda-time -->  
      <dependency>  

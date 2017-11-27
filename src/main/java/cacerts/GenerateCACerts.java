@@ -114,41 +114,7 @@ public class GenerateCACerts {
     } 
  
     
-    public static String toPem(KeyPair keyPair) throws IOException {
-        StringWriter writer = new StringWriter();
-        PEMWriter pemWriter = new PEMWriter(writer);
-        try {
-            pemWriter.writeObject(keyPair);
-            pemWriter.flush();
-            return writer.toString();
-        } finally {
-        	pemWriter.close();
-        }
-    }
     
-    public static String toPem(PublicKey keyPair) throws IOException {
-        StringWriter writer = new StringWriter();
-        PEMWriter pemWriter = new PEMWriter(writer);
-        try {
-            pemWriter.writeObject(keyPair);
-            pemWriter.flush();
-            return writer.toString();
-        } finally {
-        	pemWriter.close();
-        }
-    }
-    
-    public static String toPem(X509Certificate keyPair) throws IOException {
-        StringWriter writer = new StringWriter();
-        PEMWriter pemWriter = new PEMWriter(writer);
-        try {
-            pemWriter.writeObject(keyPair);
-            pemWriter.flush();
-            return writer.toString();
-        } finally {
-        	pemWriter.close();
-        }
-    }
 	
 	
 	public CAAuthorityPOJO generateCAAuthority(final String p_dnsName)
@@ -181,9 +147,9 @@ public class GenerateCACerts {
 			//System.out.println(toPem(rootCA));
 			
 			//System.out.println(base64Encoder.encode(rootCAKeyPair.getPrivate().getEncoded()));
-			authorityPOJO.setRootCAPrivateKey(toPem(rootCAKeyPair));
-			authorityPOJO.setRootCAPubliceKey(toPem(rootCAKeyPair.getPublic()));	
-			authorityPOJO.setRootCACerts(toPem(rootCA));
+			authorityPOJO.setRootCAPrivateKey(Utils.toPem(rootCAKeyPair));
+			authorityPOJO.setRootCAPubliceKey(Utils.toPem(rootCAKeyPair.getPublic()));	
+			authorityPOJO.setRootCACerts(Utils.toPem(rootCA));
 			
 			
 			
@@ -206,9 +172,9 @@ public class GenerateCACerts {
 			        build(rootCAKeyPair.getPrivate())));// private key of signing authority , here it is signed by rootCA  
 			
 			
-			authorityPOJO.setInterCAPrivateKey(toPem(intermedCAKeyPair));
-			authorityPOJO.setInterCAPubliceKey(toPem(intermedCAKeyPair.getPublic()));	
-			authorityPOJO.setInterCACerts(toPem(intermedCA));
+			authorityPOJO.setInterCAPrivateKey(Utils.toPem(intermedCAKeyPair));
+			authorityPOJO.setInterCAPubliceKey(Utils.toPem(intermedCAKeyPair.getPublic()));	
+			authorityPOJO.setInterCACerts(Utils.toPem(intermedCA));
 			
 			//System.out.println(intermedCA.getEncoded().toString());
 			//saveToFile(intermedCA, "D:\\intermedCA.cer");  
@@ -227,9 +193,9 @@ public class GenerateCACerts {
 			        build(intermedCAKeyPair.getPrivate())));// private key of signing authority , here it is signed by intermedCA  
 			
 
-			authorityPOJO.setDnsCerts(toPem(endUserCert));
-			authorityPOJO.setDnsPrivateKey(toPem(endUserCertKeyPair));
-			authorityPOJO.setDnsPubliceKey(toPem(endUserCertKeyPair.getPublic()));
+			authorityPOJO.setDnsCerts(Utils.toPem(endUserCert));
+			authorityPOJO.setDnsPrivateKey(Utils.toPem(endUserCertKeyPair));
+			authorityPOJO.setDnsPubliceKey(Utils.toPem(endUserCertKeyPair.getPublic()));
 			
 			
 		} catch (Exception ex ) 
