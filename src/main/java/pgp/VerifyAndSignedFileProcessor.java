@@ -93,6 +93,11 @@ public class VerifyAndSignedFileProcessor {
 				return "signature verification failed.";
 			}
 		} catch (Exception e) {
+			String s = e.getMessage();
+			if(s==null)
+			{
+				return "Invalid PGP Message File ";
+			}
 			return e.getMessage();
 		}
 	}
@@ -107,7 +112,7 @@ public class VerifyAndSignedFileProcessor {
 
 			OutputStream out = new FileOutputStream(fullPathPublicKey);
 
-	
+	System.out.println(fullPathPublicKey);
 
 			PGPSecretKey pgpSec = PGPExampleUtil.readSecretKey(keyIn);
 			PGPPrivateKey pgpPrivKey = pgpSec
@@ -172,7 +177,7 @@ public class VerifyAndSignedFileProcessor {
 			FileInputStream in = new FileInputStream(args[1]);
 			FileInputStream keyIn = new FileInputStream(args[2]);
 
-			verifyFile(in, keyIn);
+			System.out.println(verifyFile(in, keyIn));
 		} else {
 			System.err.println("usage: SignedFileProcessor -v|-s [-a] file keyfile [passPhrase]");
 		}
