@@ -22,7 +22,7 @@ public class Hmac {
 			byte[] b = mac.doFinal(msg.getBytes());
 			return b;
 		} catch (Exception e) {
-			System.out.println("Error -- " +algo);
+			//System.out.println("Error -- " +algo);
 			return ("Algo " + algo + " " +e.getMessage()).getBytes();
 		} 
 
