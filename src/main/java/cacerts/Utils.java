@@ -11,7 +11,11 @@ import java.security.KeyPair;
 import java.security.PublicKey;
 import java.security.cert.X509Certificate;
 
+import org.apache.commons.codec.binary.Hex;
 import org.bouncycastle.openssl.PEMWriter;
+
+
+import sun.misc.BASE64Encoder;
 
 /**
  * 
@@ -79,5 +83,16 @@ public class Utils {
 		byte[] encoded = Files.readAllBytes(Paths.get(path));
 		return new String(encoded, encoding);
 	}
+    
+    public static String toBase64Encode(final byte[] msg)
+    {
+    	return new BASE64Encoder().encode(msg);
+    	
+    }
+    
+    public static String toHexEncoded(byte[] b )
+    {
+    	return Hex.encodeHexString(b);
+    }
 	
 }
