@@ -1,0 +1,263 @@
+package ec;
+
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.math.BigInteger;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.KeyFactory;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.PrivateKey;
+import java.security.PublicKey;
+import java.security.SecureRandom;
+import java.security.Security;
+import java.security.spec.ECGenParameterSpec;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.List;
+
+import sun.misc.BASE64Decoder;
+import sun.misc.BASE64Encoder;
+
+import javax.crypto.KeyAgreement;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.IvParameterSpec;
+
+import org.apache.commons.codec.binary.Base64;
+
+import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
+import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
+import org.bouncycastle.jce.ECNamedCurveTable;
+import org.bouncycastle.jce.interfaces.ECPrivateKey;
+import org.bouncycastle.jce.interfaces.ECPublicKey;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.jce.spec.ECParameterSpec;
+import org.bouncycastle.jce.spec.ECPrivateKeySpec;
+import org.bouncycastle.jce.spec.ECPublicKeySpec;
+import org.bouncycastle.openssl.PEMKeyPair;
+import org.bouncycastle.openssl.PEMParser;
+import org.bouncycastle.openssl.jcajce.JcaPEMKeyConverter;
+import org.bouncycastle.util.io.pem.PemObject;
+import org.bouncycastle.util.io.pem.PemReader;
+
+import cacerts.Utils;
+import pojo.EncodedMessage;
+import pojo.ecpojo;
+
+/**
+ * 
+ * @author Anish Nath For Demo Visit https://8gwifi.org
+ *
+ */
+public class EllipticCurve {
+
+	public static byte[] iv = new SecureRandom().generateSeed(16);
+
+	public EllipticCurve() {
+
+	}
+
+	static {
+		Security.addProvider(new BouncyCastleProvider());
+	}
+
+	public ecpojo generateKeyABPairSharedSecret(final String ec_name) {
+		try {
+			ecpojo ecpojo = new ecpojo();
+			KeyPairGenerator kpgen = KeyPairGenerator.getInstance("ECDH", "BC");
+			kpgen.initialize(new ECGenParameterSpec(ec_name), new SecureRandom());
+			KeyPair pairA = kpgen.generateKeyPair();
+			KeyPair pairB = kpgen.generateKeyPair();
+
+			ecpojo.setEcprivateKeyA(Utils.toPem(pairA));
+			ecpojo.setEcprivateKeyB(Utils.toPem(pairB));
+
+			ecpojo.setEcpubliceKeyA(Utils.toPem(pairA.getPublic()));
+			ecpojo.setEcpubliceKeyB(Utils.toPem(pairB.getPublic()));
+
+			ECPrivateKey ecPrivkey = (ECPrivateKey) pairA.getPrivate();
+			ECPublicKey eckey = (ECPublicKey) pairB.getPublic();
+
+			doECDH(ecPrivkey.getD().toByteArray(), eckey.getQ().getEncoded(true), ec_name, ecpojo, true);
+
+			ecPrivkey = (ECPrivateKey) pairB.getPrivate();
+			eckey = (ECPublicKey) pairA.getPublic();
+
+			doECDH(ecPrivkey.getD().toByteArray(), eckey.getQ().getEncoded(true), ec_name, ecpojo, false);
+
+			return ecpojo;
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		}
+
+	}
+
+	public EncodedMessage encryptDecryptMessage(String aPrivateKey, String bpublicKey, String plainText, String algo,
+			String initialVector, String encryptDecryptparam) throws Exception {
+
+		EncodedMessage encodedMessage = new EncodedMessage();
+		try {
+
+			byte[] content = aPrivateKey.getBytes();
+			InputStream is = new ByteArrayInputStream(content);
+			InputStreamReader isr = new InputStreamReader(is);
+
+			Reader br = new BufferedReader(isr);
+			PEMParser parser = new PEMParser(br);
+
+			Object obj = parser.readObject();
+
+			PublicKey thepubKeyofA = null;
+			PrivateKey thePrivKeyofA = null;
+
+			if (obj instanceof org.bouncycastle.asn1.x509.SubjectPublicKeyInfo) {
+				SubjectPublicKeyInfo eckey = (SubjectPublicKeyInfo) obj;
+				thepubKeyofA = new JcaPEMKeyConverter().setProvider("BC").getPublicKey(eckey);
+			}
+
+			if (obj instanceof org.bouncycastle.openssl.PEMKeyPair) {
+				// System.out.println("Here--2");
+				PEMKeyPair kp = (PEMKeyPair) obj;
+				PrivateKeyInfo info = kp.getPrivateKeyInfo();
+				thePrivKeyofA = new JcaPEMKeyConverter().setProvider("BC").getPrivateKey(info);
+			}
+
+			content = bpublicKey.getBytes();
+			is = new ByteArrayInputStream(content);
+			isr = new InputStreamReader(is);
+			br = new BufferedReader(isr);
+			parser = new PEMParser(br);
+			obj = parser.readObject();
+
+			if (obj instanceof org.bouncycastle.asn1.x509.SubjectPublicKeyInfo) {
+				// System.out.println("Here--3");
+				SubjectPublicKeyInfo eckey = (SubjectPublicKeyInfo) obj;
+				thepubKeyofA = new JcaPEMKeyConverter().setProvider("BC").getPublicKey(eckey);
+
+			}
+
+			if (obj instanceof org.bouncycastle.openssl.PEMKeyPair) {
+				PEMKeyPair kp = (PEMKeyPair) obj;
+				PrivateKeyInfo info = kp.getPrivateKeyInfo();
+				thePrivKeyofA = new JcaPEMKeyConverter().setProvider("BC").getPrivateKey(info);
+
+			}
+
+			if (thepubKeyofA != null && thePrivKeyofA != null) {
+
+				SecretKey secretKey = Utils.generateSharedSecret(thePrivKeyofA, thepubKeyofA);
+
+				if ("encrypt".equals(encryptDecryptparam)) {
+
+					if (secretKey != null) {
+						byte b[] = null;
+						if(initialVector!=null)
+						{
+							IvParameterSpec inspec = new IvParameterSpec(Utils.hexToBytes(initialVector));
+							b = Utils.encryptString(secretKey, plainText, algo, inspec.getIV());
+							encodedMessage.setIntialVector(Utils.toHexEncoded(inspec.getIV()));
+						}
+						else {
+							b = Utils.encryptString(secretKey, plainText, algo, iv);
+							encodedMessage.setIntialVector(Utils.toHexEncoded(iv));
+						}
+						
+						encodedMessage.setBase64Encoded(Utils.toBase64Encode(b));
+						encodedMessage.setHexEncoded(Utils.toHexEncoded(b));
+						
+						return encodedMessage;
+
+					} else {
+						throw new Exception("Failed to Generate Secret Key....");
+					}
+				} else if ("decrypt".equals(encryptDecryptparam)) {
+					IvParameterSpec ivSpec = new IvParameterSpec(Utils.hexToBytes(initialVector));
+					byte b[] = Utils.decryptString(secretKey, plainText, algo, ivSpec.getIV());
+					encodedMessage.setMessage(new String(b));
+					return encodedMessage;
+				}
+			} else {
+				throw new Exception("Private Key of A , Public Key of B is required...");
+			}
+
+		} catch (Exception e) {
+			throw new Exception(e);
+			// return null;
+		}
+		return null;
+	}
+
+	private void doECDH(byte[] dataPrv, byte[] dataPub, final String ec_name, ecpojo ecpojo, boolean A)
+			throws Exception {
+		KeyAgreement ka = KeyAgreement.getInstance("ECDH", "BC");
+		ECParameterSpec params = ECNamedCurveTable.getParameterSpec(ec_name);
+		ECPrivateKeySpec prvkey = new ECPrivateKeySpec(new BigInteger(dataPrv), params);
+		KeyFactory kf = KeyFactory.getInstance("ECDH", "BC");
+		ka.init(kf.generatePrivate(prvkey));
+		ECPublicKeySpec pubKey = new ECPublicKeySpec(params.getCurve().decodePoint(dataPub), params);
+		ka.doPhase(kf.generatePublic(pubKey), true);
+		byte[] secret = ka.generateSecret();
+		if (A) {
+			ecpojo.setShareSecretA(Utils.toBase64Encode(secret));
+		}
+		if (!A) {
+			ecpojo.setShareSecretB(Utils.toBase64Encode(secret));
+		}
+
+	}
+
+	public static List<String> getAllECNamedCurveName() {
+
+		List<String> ecNames = new ArrayList<String>();
+		Enumeration<String> e = ECNamedCurveTable.getNames();
+		while (e.hasMoreElements()) {
+			String param = e.nextElement();
+			ecNames.add(param);
+		}
+		return ecNames;
+	}
+
+	public static void main(String[] args) throws Exception {
+
+		String plainText = "Hello Anish Demo at 8gwifi.org!";
+		// System.out.println("Original plaintext message: " + plainText);
+
+		Enumeration<String> e = ECNamedCurveTable.getNames();
+		while (e.hasMoreElements()) {
+			String param = e.nextElement();
+			// System.out.println(param);
+			EllipticCurve curve = new EllipticCurve();
+			ecpojo ecpojo = curve.generateKeyABPairSharedSecret(param);
+			// System.out.println(iv.toString());
+			System.out.println(ecpojo);
+			String algo = "AES/GCM/NoPadding";
+
+			EncodedMessage m = curve.encryptDecryptMessage(ecpojo.getEcprivateKeyB(), ecpojo.getEcpubliceKeyA(),
+					plainText, algo, null, "encrypt");
+			System.out.println("Encrypt --\n" + m);
+			EncodedMessage m1 = curve.encryptDecryptMessage(ecpojo.getEcprivateKeyA(), ecpojo.getEcpubliceKeyB(),
+					m.getBase64Encoded(), algo, m.getIntialVector(), "decrypt");
+
+			System.out.println(m1);
+
+			m1 = curve.encryptDecryptMessage(ecpojo.getEcprivateKeyA(), ecpojo.getEcpubliceKeyB(), m.getHexEncoded(),
+					algo, m.getIntialVector(), "decrypt");
+			System.out.println(m1);
+			// m = curve.encryptDecryptMessage(ecpojo.getEcprivateKeyA(),
+			// ecpojo.getEcpubliceKeyB(), plainText, algo, null, "encrypt");
+
+			// System.out.println(m);
+
+			break;
+
+		}
+
+	}
+}
