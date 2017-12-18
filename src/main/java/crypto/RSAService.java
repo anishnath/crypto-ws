@@ -54,7 +54,7 @@ public class RSAService {
 
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
+			//e.printStackTrace();
 			return Response.status(Response.Status.NOT_FOUND)
 					.entity(String.format("Error Performing RSA Encryption %s ", e)).build();
 		}
@@ -114,7 +114,7 @@ public class RSAService {
 			return Response.status(200).entity(json).build();
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
+			//e.printStackTrace();
 			return Response.status(Response.Status.NOT_FOUND)
 					.entity(String.format("Error Performing RSA Encryption %s ", e)).build();
 		}
