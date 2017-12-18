@@ -34,6 +34,12 @@ import sun.misc.BASE64Decoder;
 
 public class Utils {
 
+	public static byte[] decodeBASE64(String text) throws IOException {
+
+		return new BASE64Decoder().decodeBuffer(text);
+
+	}
+
 	public static byte[] inputStreamToByteArray(InputStream is) throws IOException {
 
 		ByteArrayOutputStream buffer = new ByteArrayOutputStream();
@@ -110,7 +116,7 @@ public class Utils {
 			return key;
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
-			//e.printStackTrace();
+			// e.printStackTrace();
 			return null;
 		}
 	}
@@ -179,7 +185,6 @@ public class Utils {
 			byte[] cipherTextBytes = null;
 			String pattern = "^([A-Za-z0-9+/]{4})*([A-Za-z0-9+/]{4}|[A-Za-z0-9+/]{3}=|[A-Za-z0-9+/]{2}==)$";
 
-
 			if (cipherText.matches(pattern)) {
 				cipherTextBytes = new BASE64Decoder().decodeBuffer(cipherText);
 
@@ -197,8 +202,8 @@ public class Utils {
 
 			return s.getBytes();
 		} catch (Exception e) {
-			//e.printStackTrace();
-			throw new Exception (e);
+			// e.printStackTrace();
+			throw new Exception(e);
 		}
 	}
 
