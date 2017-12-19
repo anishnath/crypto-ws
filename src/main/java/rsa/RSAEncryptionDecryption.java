@@ -9,9 +9,12 @@ import java.security.KeyPair;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.Security;
+import java.security.cert.X509Certificate;
 
 import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
+import org.bouncycastle.cert.X509CertificateHolder;
+import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
 import org.bouncycastle.crypto.params.RSAKeyParameters;
 import org.bouncycastle.crypto.util.PublicKeyFactory;
 import org.bouncycastle.jcajce.provider.asymmetric.rsa.BCRSAPrivateCrtKey;
@@ -50,6 +53,16 @@ public class RSAEncryptionDecryption {
 
 		System.out.println("Class-- " + obj.getClass());
 
+		if(obj instanceof org.bouncycastle.cert.X509CertificateHolder)
+		{
+			X509CertificateHolder x509CertificateHolder = (org.bouncycastle.cert.X509CertificateHolder)obj;
+			JcaX509CertificateConverter jcaX509CertificateConverter = new JcaX509CertificateConverter().setProvider("BC");
+			X509Certificate x509Certificate =  jcaX509CertificateConverter.getCertificate(x509CertificateHolder);
+			PublicKey publicKey = x509Certificate.getPublicKey();
+			String encryptedMessage = RSAUtil.encrypt(message, publicKey, algo);
+			return encryptedMessage;
+		}
+		
 		if (obj instanceof org.bouncycastle.jce.provider.JCERSAPublicKey) {
 			JCERSAPublicKey jcersaPublicKey = (org.bouncycastle.jce.provider.JCERSAPublicKey) obj;
 			String encryptedMessage = RSAUtil.encrypt(message, jcersaPublicKey, algo);
@@ -168,6 +181,16 @@ public class RSAEncryptionDecryption {
 			String encryptedMessage = RSAUtil.decrypt(message, bcrsaPrivateKey, algo);
 			return encryptedMessage;
 
+		}
+		
+		if(obj instanceof org.bouncycastle.cert.X509CertificateHolder)
+		{
+			X509CertificateHolder x509CertificateHolder = (org.bouncycastle.cert.X509CertificateHolder)obj;
+			JcaX509CertificateConverter jcaX509CertificateConverter = new JcaX509CertificateConverter().setProvider("BC");
+			X509Certificate x509Certificate =  jcaX509CertificateConverter.getCertificate(x509CertificateHolder);
+			PublicKey publicKey = x509Certificate.getPublicKey();
+			String encryptedMessage = RSAUtil.decrypt(message, publicKey, algo);
+			return encryptedMessage;
 		}
 
 		throw new Exception("Not Able to Determine PemParser Object");
