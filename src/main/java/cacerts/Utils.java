@@ -4,6 +4,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
+import java.math.BigInteger;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -12,6 +13,7 @@ import java.security.KeyPair;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.cert.X509Certificate;
+import java.util.Random;
 
 import javax.crypto.Cipher;
 import javax.crypto.KeyAgreement;
@@ -19,12 +21,11 @@ import javax.crypto.SecretKey;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
-import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.Hex;
 import org.bouncycastle.openssl.PEMWriter;
 
-import sun.misc.BASE64Encoder;
 import sun.misc.BASE64Decoder;
+import sun.misc.BASE64Encoder;
 
 /**
  * 
@@ -33,6 +34,13 @@ import sun.misc.BASE64Decoder;
  */
 
 public class Utils {
+	
+	public static BigInteger getRandomBigInteger() {
+		        Random rand = new Random();
+		        BigInteger result = new BigInteger(4, rand); // (2^4-1) = 15 is the maximum value
+		        return result;
+		    }
+
 
 	public static byte[] decodeBASE64(String text) throws IOException {
 
