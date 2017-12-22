@@ -10,6 +10,7 @@ import javax.ws.rs.core.Response;
 
 import com.google.gson.Gson;
 
+import pem.PemParser;
 import pem.SignCSR;
 import pojo.EncodedMessage;
 
@@ -28,10 +29,13 @@ public class CertService {
 		}
 
 		SignCSR parser = new SignCSR();
+		PemParser parser1 = new PemParser();
 		try {
 			String message = parser.sign(msg, null);
 			EncodedMessage encodedMessage = new EncodedMessage();
+			String base64Decoded = parser1.parsePemFile(message);
 			encodedMessage.setMessage(message);
+			encodedMessage.setBase64Decoded(base64Decoded);
 			Gson gson = new Gson();
 			String json = gson.toJson(encodedMessage,EncodedMessage.class);
 			return Response.status(200).entity(json).build();
@@ -54,10 +58,13 @@ public class CertService {
 		}
 		
 		SignCSR parser = new SignCSR();
+		PemParser parser1 = new PemParser();
 		try {
 			String message = parser.sign(msg, password);
+			String base64Decoded = parser1.parsePemFile(message);
 			EncodedMessage encodedMessage = new EncodedMessage();
 			encodedMessage.setMessage(message);
+			encodedMessage.setBase64Decoded(base64Decoded);
 			Gson gson = new Gson();
 			String json = gson.toJson(encodedMessage,EncodedMessage.class);
 			return Response.status(200).entity(json).build();
