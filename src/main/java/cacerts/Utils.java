@@ -10,8 +10,10 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.security.Key;
 import java.security.KeyPair;
+import java.security.KeyPairGenerator;
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.security.SecureRandom;
 import java.security.cert.X509Certificate;
 import java.util.Random;
 
@@ -35,6 +37,14 @@ import sun.misc.BASE64Encoder;
 
 public class Utils {
 	
+	public static KeyPair generateRSAKeyPair(String algo,int bits)
+			throws Exception {
+		KeyPairGenerator kpGen = KeyPairGenerator.getInstance(algo, "BC");
+		kpGen.initialize(bits, new SecureRandom());
+
+		return kpGen.generateKeyPair();
+	}
+		
 	public static BigInteger getRandomBigInteger() {
 		        Random rand = new Random();
 		        BigInteger result = new BigInteger(4, rand); // (2^4-1) = 15 is the maximum value
