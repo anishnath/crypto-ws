@@ -86,7 +86,7 @@ public class CertService {
 		
 		if(null==json || json.trim().length()==0)
 		{
-			String Valid_Request ="{\"hostName\":\"XY\",\"company\":\"A\",\"Department\":\"DD\",\"Email\":\"xyz\",\"City\":\"Cyit\",\"State\":\"state\",\"Country\":\"country\",\"expiry\":12,\"alt_name\":[\"Anish\",\"Nath\",\"8gwifi.org\"]}";
+			String Valid_Request ="{\"hostName\":\"8gwifi\",\"company\":\"A\",\"Department\":\"DD\",\"Email\":\"zarigatongy@gmail.com\",\"City\":\"Cyit\",\"State\":\"state\",\"Country\":\"country\",\"expiry\":12,\"alt_name\":[\"Anish\",\"Nath\",\"8gwifi.org\"]}";
 			return Response.status(Response.Status.NOT_FOUND)
 					.entity(String.format("p_certifno %s Request Format ", Valid_Request)).build();
 		}
@@ -98,7 +98,7 @@ public class CertService {
 		
 		if (certInfo ==null) 
 		{
-			String Valid_Request ="{\"hostName\":\"XY\",\"company\":\"A\",\"Department\":\"DD\",\"Email\":\"xyz\",\"City\":\"Cyit\",\"State\":\"state\",\"Country\":\"country\",\"expiry\":12,\"alt_name\":[\"Anish\",\"Nath\",\"8gwifi.org\"]}";
+			String Valid_Request ="{\"hostName\":\"8gwifi.org\",\"company\":\"A\",\"Department\":\"DD\",\"Email\":\"zarigatongy@gmail.com\",\"City\":\"Cyit\",\"State\":\"state\",\"Country\":\"country\",\"expiry\":12,\"alt_name\":[\"Anish\",\"Nath\",\"8gwifi.org\"]}";
 			return Response.status(Response.Status.NOT_FOUND)
 					.entity(String.format("p_certifno %s Request Format ", Valid_Request)).build();
 		}
@@ -142,7 +142,7 @@ public class CertService {
 		
 		if(null==json || json.trim().length()==0)
 		{
-			String Valid_Request ="{\"hostName\":\"XY\",\"company\":\"A\",\"Department\":\"DD\",\"Email\":\"xyz\",\"City\":\"Cyit\",\"State\":\"state\",\"Country\":\"country\",\"expiry\":12,\"alt_name\":[\"Anish\",\"Nath\",\"8gwifi.org\"]}";
+			String Valid_Request ="{\"hostName\":\"8gwifi.org\",\"company\":\"A\",\"Department\":\"DD\",\"Email\":\"zarigatongy@gmail.com\",\"City\":\"Cyit\",\"State\":\"state\",\"Country\":\"country\",\"expiry\":12,\"alt_name\":[\"Anish\",\"Nath\",\"8gwifi.org\"]}";
 			return Response.status(Response.Status.NOT_FOUND)
 					.entity(String.format("p_certifno %s Request Format ", Valid_Request)).build();
 		}
@@ -175,7 +175,7 @@ public class CertService {
 			
 			if (certInfo ==null) 
 			{
-				String Valid_Request ="{\"hostName\":\"XY\",\"company\":\"A\",\"Department\":\"DD\",\"Email\":\"xyz\",\"City\":\"Cyit\",\"State\":\"state\",\"Country\":\"country\",\"expiry\":12,\"alt_name\":[\"Anish\",\"Nath\",\"8gwifi.org\"]}";
+				String Valid_Request ="{\"hostName\":\"8gwifi.org\",\"company\":\"A\",\"Department\":\"DD\",\"Email\":\"zarigatongy@gmail.com\",\"City\":\"Cyit\",\"State\":\"state\",\"Country\":\"country\",\"expiry\":12,\"alt_name\":[\"Anish\",\"Nath\",\"8gwifi.org\"]}";
 				return Response.status(Response.Status.NOT_FOUND)
 						.entity(String.format("p_certifno %s Request Format ", Valid_Request)).build();
 			}
