@@ -11,6 +11,7 @@ import javax.ws.rs.core.Response;
 import com.google.gson.Gson;
 
 import pem.CertInfo;
+import pem.CertificateVerifier;
 import pem.PemParser;
 import pem.SelfSignGenerate;
 import pem.SignCSR;
@@ -204,6 +205,86 @@ public class CertService {
 					.entity(String.format("p_privatekey  %s Inavlid RSA Private Key it should start with -----BEGIN RSA PRIVATE KEY----- and ends with -----END RSA PRIVATE KEY-----  ", privatekey)).build();
 		}
 		
+		
+		
+	}
+	
+	@POST
+	@Path("/verifycsrcrtkey")
+	@Produces({ "application/json" })
+	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+	public Response verify(@FormParam("p_pem1") String pem1, @FormParam("p_pem2") String pem2) {
+		if(null==pem1 || pem1.trim().length()==0)
+		{
+			return Response.status(Response.Status.NOT_FOUND)
+					.entity(String.format("p_pem1 %s Input CSR or CRT or RSA Key for Validation", pem1)).build();
+		}
+		
+		pem1 = pem1.trim();
+		
+		if(null==pem2 || pem2.trim().length()==0)
+		{
+			return Response.status(Response.Status.NOT_FOUND)
+					.entity(String.format("p_pem1 %s Input CSR or CRT or RSA Key ", pem1)).build();
+		}
+		
+		pem2 = pem2.trim();
+		
+		if(pem1.equals(pem2))
+		{
+			return Response.status(Response.Status.NOT_FOUND)
+					.entity(String.format("p_pem1 and pem2 objects are equal %s", pem1)).build();
+		}
+		
+		boolean isValid = false;
+		
+		if (pem1.contains("BEGIN RSA PRIVATE KEY") && pem1.contains("END RSA PRIVATE KEY")) {
+			isValid = true;
+		}
+		
+		if (pem1.contains("BEGIN CERTIFICATE REQUEST") && pem1.contains("END CERTIFICATE REQUEST")) {
+			isValid = true;
+		}
+		
+		if (pem1.contains("BEGIN CERTIFICATE") && pem1.contains("END CERTIFICATE")) {
+			isValid = true;
+		}
+		
+		if(!isValid)
+		{
+			return Response.status(Response.Status.NOT_FOUND)
+					.entity(String.format("p_pem1 %s Input CSR or CRT or RSA Key is not Valid ", pem1)).build();
+		}
+		
+		if (pem2.contains("BEGIN RSA PRIVATE KEY") && pem2.contains("END RSA PRIVATE KEY")) {
+			isValid = true;
+		}
+		
+		if (pem2.contains("BEGIN CERTIFICATE REQUEST") && pem2.contains("END CERTIFICATE REQUEST")) {
+			isValid = true;
+		}
+		
+		if (pem2.contains("BEGIN CERTIFICATE") && pem2.contains("END CERTIFICATE")) {
+			isValid = true;
+		}
+		
+		if(!isValid)
+		{
+			return Response.status(Response.Status.NOT_FOUND)
+					.entity(String.format("p_pem2 %s Input CSR or CRT or RSA Key is not Valid ", pem2)).build();
+		}
+		
+		CertificateVerifier certificateVerifier = new CertificateVerifier();
+		Gson gson = new Gson();
+		try {
+			certpojo certpojo = certificateVerifier.verifyCertificate(pem1, pem2);
+			gson = new Gson();
+			String json1 = gson.toJson(certpojo,certpojo.class);
+			return Response.status(200).entity(json1).build();
+		} catch (Exception e) {
+			return Response.status(Response.Status.NOT_FOUND)
+					.entity(String.format("Failed to Verify %s ", e)).build();
+		}
 		
 		
 	}
