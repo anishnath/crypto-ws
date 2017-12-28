@@ -29,8 +29,11 @@ import org.bouncycastle.openssl.PEMKeyPair;
 import org.bouncycastle.openssl.PEMParser;
 import org.bouncycastle.openssl.jcajce.JcaPEMKeyConverter;
 import org.bouncycastle.openssl.jcajce.JcePEMDecryptorProviderBuilder;
+import org.bouncycastle.operator.InputDecryptorProvider;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
+import org.bouncycastle.pkcs.PKCS8EncryptedPrivateKeyInfo;
 import org.bouncycastle.pkcs.jcajce.JcaPKCS10CertificationRequest;
+import org.bouncycastle.pkcs.jcajce.JcePKCSPBEInputDecryptorProviderBuilder;
 
 import cacerts.Utils;
 
@@ -69,6 +72,30 @@ public class PemParser {
 
 			System.out.println("PemParser Class-- " + obj.getClass());
 			StringBuilder builder = new StringBuilder();
+			
+			if(obj instanceof PKCS8EncryptedPrivateKeyInfo)
+			{
+				PKCS8EncryptedPrivateKeyInfo encryptedPrivateKeyInfo = (org.bouncycastle.pkcs.PKCS8EncryptedPrivateKeyInfo)obj;
+				
+				InputDecryptorProvider inputDecryptorProvider = new JcePKCSPBEInputDecryptorProviderBuilder().build(password.toCharArray());
+				
+				PrivateKeyInfo privateKeyinfo= encryptedPrivateKeyInfo.decryptPrivateKeyInfo(inputDecryptorProvider);
+				JcaPEMKeyConverter jcaPEMKeyConverter = new JcaPEMKeyConverter().setProvider("BC");
+				PrivateKey privateKey =  jcaPEMKeyConverter.getPrivateKey(privateKeyinfo);
+				builder.append("\n Private Key algo " +  privateKey.getAlgorithm());
+				builder.append("\n Private Format  " +  privateKey.getFormat());
+				
+				String temp = ASN1Dump.dumpAsString(ASN1Dump.dumpAsString(privateKey,true
+						));
+				if(temp!=null && temp.contains("unknown object type"))
+				{
+					temp = temp.substring(40,temp.length());
+					
+				}
+				builder.append("\n ASN1 Dump\n"+temp);
+				return builder.toString();
+				
+			}
 			
 			if(obj instanceof org.bouncycastle.openssl.PEMEncryptedKeyPair)
 			{
