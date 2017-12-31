@@ -19,6 +19,7 @@ import java.util.Random;
 
 import javax.crypto.Cipher;
 import javax.crypto.KeyAgreement;
+import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
@@ -36,6 +37,16 @@ import sun.misc.BASE64Encoder;
  */
 
 public class Utils {
+	
+	public static String generateKey(String alg, int size, String seed) throws Exception{
+            SecureRandom securerandom = SecureRandom.getInstance("SHA1PRNG");
+            securerandom.setSeed(seed.getBytes("UTF-8"));
+            KeyGenerator kg = KeyGenerator.getInstance(alg);
+            kg.init(size, securerandom);
+            SecretKey sk = kg.generateKey();
+            return toBase64Encode(sk.getEncoded());
+    }
+	
 	
 	public static KeyPair generateRSAKeyPair(String algo,int bits)
 			throws Exception {
