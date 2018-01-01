@@ -234,7 +234,7 @@ public class EncryptDecrypt {
 		// || "RIJNDAEL".equalsIgnoreCase(cipherparameter)
 		// || "DESede/CBC/NoPadding".equalsIgnoreCase(cipherparameter))) {
 
-		System.out.println("cipherparameter  " + cipherparameter);
+		
 
 		byte[] iv;
 
@@ -283,7 +283,6 @@ public class EncryptDecrypt {
 		return s;
 		} catch( Exception ex )
 		{
-			System.out.println("Encryption Cipher Paramater -- " + cipherparameter);
 			throw new Exception(ex);
 		}
 
@@ -504,7 +503,7 @@ public class EncryptDecrypt {
 		
 		
 	}catch (Exception ex) {
-			System.out.println("Decryption Exception Cipher " + cipherparameter);
+			
 			throw new Exception(ex);
 		}
 	}
@@ -647,7 +646,7 @@ public class EncryptDecrypt {
 					if(dec!=null)
 					{
 						
-						System.out.println("Cipher Paramter " + cipherparameter1[i] + "\t " +  "decrypted \t " + dec +"\t Equals " + dec.equals(plaintext));
+						//System.out.println("Cipher Paramter " + cipherparameter1[i] + "\t " +  "decrypted \t " + dec +"\t Equals " + dec.equals(plaintext));
 					}
 
 				}
@@ -662,7 +661,8 @@ public class EncryptDecrypt {
 			System.out.println("HashSet " + str.size());
 			
 			for (Iterator iterator = str.iterator(); iterator.hasNext();) {
-				System.out.print(("\""+(String) iterator.next() + "\",").toUpperCase());
+				//System.out.print(("\""+(String) iterator.next() + "\",").toUpperCase());
+				System.out.println(((String) iterator.next() ).toUpperCase());
 			}		
 
 	}
