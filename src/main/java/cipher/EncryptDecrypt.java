@@ -61,6 +61,7 @@ public class EncryptDecrypt {
 		}
 
 		cipherparameter = cipherparameter.trim().toUpperCase();
+		System.out.println("cipherparameter "+ cipherparameter);
 		try {
 		if (cipherparameter != null && (cipherparameter.startsWith("AES_") && !cipherparameter.contains("GCM"))) {
 		
@@ -299,6 +300,7 @@ public class EncryptDecrypt {
 		}
 
 		cipherparameter = cipherparameter.trim().toUpperCase();
+		System.out.println("cipherparameter "+ cipherparameter);
 
 		try {
 
