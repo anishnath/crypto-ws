@@ -38,9 +38,42 @@ public class EllipticCurveService {
 		String json = gson.toJson(string);
 		return Response.status(200).entity(json).build();
 	}
-
+	
 	@GET
 	@Path("/generatekp/{p_ecname}")
+	@Produces({ "application/json" })
+	public Response generateKeyPair(@PathParam("p_ecname") String name) {
+
+		if (name == null || name.trim().length() == 0) {
+			return Response.status(Response.Status.NOT_FOUND)
+					.entity(String.format("param1 %s Empty ecparamname Name", name)).build();
+		}
+
+		name = name.trim();
+		boolean ecParamValid = false;
+		Enumeration<String> e = ECNamedCurveTable.getNames();
+		while (e.hasMoreElements()) {
+			String param = e.nextElement();
+			if (param.equals(name)) {
+				ecParamValid = true;
+				break;
+			}
+		}
+
+		if (ecParamValid) {
+			EllipticCurve curve = new EllipticCurve();
+			ecpojo ecpojo = curve.generateKeyPair(name);
+			Gson gson = new Gson();
+			String json = gson.toJson(ecpojo);
+			return Response.status(200).entity(json).build();
+		} else {
+			return Response.status(Response.Status.NOT_FOUND)
+					.entity(String.format("param1 %s not a Valid EC_Param Name", name)).build();
+		}
+	}
+
+	@GET
+	@Path("/generateABkp/{p_ecname}")
 	@Produces({ "application/json" })
 	public Response generateKeyABPairSharedSecret(@PathParam("p_ecname") String name) {
 

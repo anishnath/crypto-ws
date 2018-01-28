@@ -6,9 +6,12 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.math.BigInteger;
+import java.security.InvalidAlgorithmParameterException;
 import java.security.KeyFactory;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.SecureRandom;
@@ -54,6 +57,24 @@ public class EllipticCurve {
 
 	static {
 		Security.addProvider(new BouncyCastleProvider());
+	}
+	
+	public ecpojo generateKeyPair(final String ec_name) {
+		
+		try {
+			ecpojo ecpojo = new ecpojo();
+			KeyPairGenerator kpgen = KeyPairGenerator.getInstance("ECDH", "BC");
+			kpgen.initialize(new ECGenParameterSpec(ec_name), new SecureRandom());
+			KeyPair pairA = kpgen.generateKeyPair();
+			ecpojo.setEcprivateKeyA(Utils.toPem(pairA));
+			ecpojo.setEcpubliceKeyA(Utils.toPem(pairA.getPublic()));
+			return ecpojo;
+			
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		}
 	}
 
 	public ecpojo generateKeyABPairSharedSecret(final String ec_name) {
