@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
 import java.math.BigInteger;
+import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -24,6 +25,7 @@ import javax.crypto.SecretKey;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
+import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.Hex;
 import org.bouncycastle.openssl.PEMWriter;
 
@@ -37,31 +39,29 @@ import sun.misc.BASE64Encoder;
  */
 
 public class Utils {
-	
-	public static String generateKey(String alg, int size, String seed) throws Exception{
-            SecureRandom securerandom = SecureRandom.getInstance("SHA1PRNG");
-            securerandom.setSeed(seed.getBytes("UTF-8"));
-            KeyGenerator kg = KeyGenerator.getInstance(alg);
-            kg.init(size, securerandom);
-            SecretKey sk = kg.generateKey();
-            return toBase64Encode(sk.getEncoded());
-    }
-	
-	
-	public static KeyPair generateRSAKeyPair(String algo,int bits)
-			throws Exception {
+
+	public static String generateKey(String alg, int size, String seed) throws Exception {
+		SecureRandom securerandom = SecureRandom.getInstance("SHA1PRNG");
+		securerandom.setSeed(seed.getBytes("UTF-8"));
+		KeyGenerator kg = KeyGenerator.getInstance(alg);
+		kg.init(size, securerandom);
+		SecretKey sk = kg.generateKey();
+		return toBase64Encode(sk.getEncoded());
+	}
+
+	public static KeyPair generateRSAKeyPair(String algo, int bits) throws Exception {
 		KeyPairGenerator kpGen = KeyPairGenerator.getInstance(algo, "BC");
 		kpGen.initialize(bits, new SecureRandom());
 
 		return kpGen.generateKeyPair();
 	}
-		
-	public static BigInteger getRandomBigInteger() {
-		        Random rand = new Random();
-		        BigInteger result = new BigInteger(4, rand); // (2^4-1) = 15 is the maximum value
-		        return result;
-		    }
 
+	public static BigInteger getRandomBigInteger() {
+		Random rand = new Random();
+		BigInteger result = new BigInteger(4, rand); // (2^4-1) = 15 is the
+														// maximum value
+		return result;
+	}
 
 	public static byte[] decodeBASE64(String text) throws IOException {
 
@@ -206,25 +206,36 @@ public class Utils {
 	}
 
 	// "AES/GCM/NoPadding"
-	public static byte[] decryptString(SecretKey key, String cipherText, String algo, byte[] iv) throws Exception {
+	/**
+	 * Elliptic Curve Decryption...
+	 * @param key
+	 * @param cipherText
+	 * @param algo
+	 * @return
+	 * @throws Exception
+	 */
+	public static byte[] decryptString(SecretKey key, String cipherText, String algo) throws Exception {
 		try {
 			Key decryptionKey = new SecretKeySpec(key.getEncoded(), key.getAlgorithm());
-			IvParameterSpec ivSpec = new IvParameterSpec(iv);
+			byte[] encryptedTextBytes = null;
+			IvParameterSpec ivSpec = null;
 			Cipher cipher = Cipher.getInstance(algo, "BC");
-			byte[] cipherTextBytes = null;
-			String pattern = "^([A-Za-z0-9+/]{4})*([A-Za-z0-9+/]{4}|[A-Za-z0-9+/]{3}=|[A-Za-z0-9+/]{2}==)$";
 
-			if (cipherText.matches(pattern)) {
-				cipherTextBytes = new BASE64Decoder().decodeBuffer(cipherText);
+			ByteBuffer buffer = ByteBuffer.wrap(new Base64().decode(cipherText));
+			byte[] saltBytes = new byte[16];
+			buffer.get(saltBytes, 0, saltBytes.length);
 
-			} else {
-				cipherTextBytes = hexToBytes(cipherText);
-			}
+			ivSpec = new IvParameterSpec(saltBytes);
+
+			encryptedTextBytes = new byte[buffer.capacity() - saltBytes.length];
+
+			buffer.get(encryptedTextBytes);
+
 			byte[] plainText;
 
 			cipher.init(Cipher.DECRYPT_MODE, decryptionKey, ivSpec);
-			plainText = new byte[cipher.getOutputSize(cipherTextBytes.length)];
-			int decryptLength = cipher.update(cipherTextBytes, 0, cipherTextBytes.length, plainText, 0);
+			plainText = new byte[cipher.getOutputSize(encryptedTextBytes.length)];
+			int decryptLength = cipher.update(encryptedTextBytes, 0, encryptedTextBytes.length, plainText, 0);
 			decryptLength += cipher.doFinal(plainText, decryptLength);
 
 			String s = new String(plainText, "UTF-8");

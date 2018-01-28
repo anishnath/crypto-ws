@@ -77,7 +77,7 @@ public class EllipticCurveService {
 	@Produces({ "application/json" })
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	public Response encryptDecryptMsg(@FormParam("p_msg") String msg, @FormParam("p_publicKey") String publicKey,
-			@FormParam("p_privatekey") String privatekey, @FormParam("p_iv") String intialvector,
+			@FormParam("p_privatekey") String privatekey,
 			@FormParam("p_encryptDecrypt") String encryptDecrypt) {
 		
 
@@ -140,21 +140,12 @@ public class EllipticCurveService {
 					.build();
 		}
 
-		if (intialvector == null || intialvector.isEmpty()) {
-			intialvector = null;
-			
-			if("decrypt".equals(encryptDecrypt))
-			{
-				
-				return Response.status(Response.Status.NOT_FOUND).entity(String.format("Error Performing Original InitialVectore needed which is Used for Decryption %s ", encryptDecrypt))
-						.build();
-			}
-		}
+
 		String algo = "AES/GCM/NoPadding";
 		if ("encrypt".equals(encryptDecrypt) || "decrypt".equals(encryptDecrypt)) {
 			EllipticCurve curve = new EllipticCurve();
 			try {
-				EncodedMessage m = curve.encryptDecryptMessage(privatekey, publicKey, msg, algo, intialvector,
+				EncodedMessage m = curve.encryptDecryptMessage(privatekey, publicKey, msg, algo,
 						encryptDecrypt);
 
 				Gson gson = new Gson();

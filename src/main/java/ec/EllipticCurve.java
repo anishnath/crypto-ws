@@ -2,17 +2,13 @@ package ec;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.math.BigInteger;
-import java.security.InvalidAlgorithmParameterException;
 import java.security.KeyFactory;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.SecureRandom;
@@ -22,14 +18,9 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
 
-import sun.misc.BASE64Decoder;
-import sun.misc.BASE64Encoder;
-
 import javax.crypto.KeyAgreement;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.IvParameterSpec;
-
-import org.apache.commons.codec.binary.Base64;
 
 import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
@@ -43,8 +34,6 @@ import org.bouncycastle.jce.spec.ECPublicKeySpec;
 import org.bouncycastle.openssl.PEMKeyPair;
 import org.bouncycastle.openssl.PEMParser;
 import org.bouncycastle.openssl.jcajce.JcaPEMKeyConverter;
-import org.bouncycastle.util.io.pem.PemObject;
-import org.bouncycastle.util.io.pem.PemReader;
 
 import cacerts.Utils;
 import pojo.EncodedMessage;
@@ -100,7 +89,7 @@ public class EllipticCurve {
 	}
 
 	public EncodedMessage encryptDecryptMessage(String aPrivateKey, String bpublicKey, String plainText, String algo,
-			String initialVector, String encryptDecryptparam) throws Exception {
+			 String encryptDecryptparam) throws Exception {
 
 		EncodedMessage encodedMessage = new EncodedMessage();
 		try {
@@ -154,21 +143,25 @@ public class EllipticCurve {
 
 				SecretKey secretKey = Utils.generateSharedSecret(thePrivKeyofA, thepubKeyofA);
 
+				SecureRandom random = new SecureRandom();
+				byte bytes[] = new byte[16];
+				random.nextBytes(bytes);
+
 				if ("encrypt".equals(encryptDecryptparam)) {
 
 					if (secretKey != null) {
 						byte b[] = null;
-						if (initialVector != null) {
-							IvParameterSpec inspec = new IvParameterSpec(Utils.hexToBytes(initialVector));
-							b = Utils.encryptString(secretKey, plainText, algo, inspec.getIV());
-							encodedMessage.setIntialVector(Utils.toHexEncoded(inspec.getIV()));
-						} else {
-							b = Utils.encryptString(secretKey, plainText, algo, iv);
-							encodedMessage.setIntialVector(Utils.toHexEncoded(iv));
-						}
 
-						encodedMessage.setBase64Encoded(Utils.toBase64Encode(b));
-						encodedMessage.setHexEncoded(Utils.toHexEncoded(b));
+						IvParameterSpec inspec = new IvParameterSpec(bytes);
+						b = Utils.encryptString(secretKey, plainText, algo, inspec.getIV());
+						
+						byte[] buffer =  new byte[bytes.length + b.length];
+						
+						System.arraycopy(bytes, 0, buffer, 0, bytes.length);
+						System.arraycopy(b, 0, buffer, bytes.length, b.length);
+						
+						encodedMessage.setIntialVector(Utils.toHexEncoded(inspec.getIV()));
+						encodedMessage.setBase64Encoded(Utils.toBase64Encode(buffer));
 
 						return encodedMessage;
 
@@ -176,8 +169,8 @@ public class EllipticCurve {
 						throw new Exception("Failed to Generate Secret Key....");
 					}
 				} else if ("decrypt".equals(encryptDecryptparam)) {
-					IvParameterSpec ivSpec = new IvParameterSpec(Utils.hexToBytes(initialVector));
-					byte b[] = Utils.decryptString(secretKey, plainText, algo, ivSpec.getIV());
+					
+					byte b[] = Utils.decryptString(secretKey, plainText, algo);
 					encodedMessage.setMessage(new String(b));
 					return encodedMessage;
 				}
@@ -227,17 +220,14 @@ public class EllipticCurve {
 		String plainText = "Hello Anish Demo at 8gwifi.org!";
 		// System.out.println("Original plaintext message: " + plainText);
 
-
-
 		String[] validList = { "c2pnb272w1", "c2tnb359v1", "prime256v1", "c2pnb304w1", "c2pnb368w1", "c2tnb431r1",
 				"sect283r1", "sect283k1", "secp256k1", "secp256r1", "sect571r1", "sect571k1", "sect409r1", "sect409k1",
 				"secp521r1", "secp384r1", "P-521", "P-256", "P-384", "B-409", "B-283", "B-571", "K-409", "K-283",
 				"K-571", "brainpoolp512r1", "brainpoolp384t1", "brainpoolp256r1", "brainpoolp512t1", "brainpoolp256t1",
 				"brainpoolp320r1", "brainpoolp384r1", "brainpoolp320t1", "FRP256v1", "sm2p256v1" };
-		
+
 		for (int i = 0; i < validList.length; i++) {
-			
-		
+
 			String param = "";
 			try {
 				param = validList[i];
@@ -249,15 +239,25 @@ public class EllipticCurve {
 				String algo = "AES/GCM/NoPadding";
 
 				EncodedMessage m = curve.encryptDecryptMessage(ecpojo.getEcprivateKeyB(), ecpojo.getEcpubliceKeyA(),
-						plainText, algo, null, "encrypt");
-				// System.out.println("Encrypt --\n" + m);
-				EncodedMessage m1 = curve.encryptDecryptMessage(ecpojo.getEcprivateKeyA(), ecpojo.getEcpubliceKeyB(),
-						m.getBase64Encoded(), algo, m.getIntialVector(), "decrypt");
+						plainText, algo, "encrypt");
+				 //System.out.println("Encrypt --\n" + m);
+				
+				 
+				 EncodedMessage m1 = curve.encryptDecryptMessage(ecpojo.getEcprivateKeyA(), ecpojo.getEcpubliceKeyB(),
+						m.getBase64Encoded(), algo, "decrypt");
+				 
+				 if(m1.getMessage().equals(plainText))
+				 {
+					 System.out.println("Sucess -- ");
+				 }
+				 else {
+					 System.out.println("Failed.. -- ");
+				 }
 
-				// System.out.println(m1);
+				 //System.out.println(m1);
 
-				m1 = curve.encryptDecryptMessage(ecpojo.getEcprivateKeyA(), ecpojo.getEcpubliceKeyB(),
-						m.getHexEncoded(), algo, m.getIntialVector(), "decrypt");
+				//m1 = curve.encryptDecryptMessage(ecpojo.getEcprivateKeyA(), ecpojo.getEcpubliceKeyB(),
+					//	m.getHexEncoded(), algo, m.getIntialVector(), "decrypt");
 				// System.out.println(m1);
 				// m = curve.encryptDecryptMessage(ecpojo.getEcprivateKeyA(),
 				// ecpojo.getEcpubliceKeyB(), plainText, algo, null, "encrypt");
@@ -265,9 +265,9 @@ public class EllipticCurve {
 				// System.out.println(m);
 
 				// break;
-				System.out.println(param);
+				//System.out.println(param);
 			} catch (Exception e1) {
-				System.out.println("Failed --> " + param);
+				System.out.println("Failed --> " + param + e1);
 			}
 
 		}
