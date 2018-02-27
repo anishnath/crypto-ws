@@ -51,7 +51,9 @@ public class Utils {
 
 	public static KeyPair generateRSAKeyPair(String algo, int bits) throws Exception {
 		KeyPairGenerator kpGen = KeyPairGenerator.getInstance(algo, "BC");
-		kpGen.initialize(bits, new SecureRandom());
+		SecureRandom random = SecureRandom.getInstance("SHA1PRNG",
+	            "BC");
+		kpGen.initialize(bits, random);
 
 		return kpGen.generateKeyPair();
 	}
