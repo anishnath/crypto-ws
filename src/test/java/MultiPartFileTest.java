@@ -15,15 +15,18 @@ public class MultiPartFileTest {
 	
 	public static void main(String[] args) throws ClientProtocolException, IOException {
 		HttpClient httpclient = new DefaultHttpClient();
-		HttpPost httpPost = new HttpPost("http://localhost:8082/crypto/rest/pgp/pgpverifyfile");
+		HttpPost httpPost = new HttpPost("http://localhost:8082/crypto/rest/dsa/sign");
 
 		FileBody uploadFilePart = new FileBody(new File("pom.xml.asc"));
 		FileBody uploadFilePart2 = new FileBody(new File("pubkey.asc"));
+		
+		
 		StringBody stringBody  = new StringBody("test...");
 		
 		MultipartEntity reqEntity = new MultipartEntity();
-		reqEntity.addPart("file", uploadFilePart);
-		reqEntity.addPart("pKey", uploadFilePart2);
+		reqEntity.addPart("p_file", uploadFilePart);
+		reqEntity.addPart("p_key", stringBody);
+		reqEntity.addPart("p_algo", stringBody);
 		httpPost.setEntity(reqEntity);
 
 		HttpResponse response = httpclient.execute(httpPost);
