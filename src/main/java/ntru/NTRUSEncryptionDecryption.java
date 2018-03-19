@@ -5,7 +5,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
 import java.security.Security;
 import java.util.UUID;
 
@@ -23,7 +22,8 @@ import net.sf.ntru.sign.SignatureParameters;
 import pojo.ntrupojo;
 
 /**
- * A simple program demonstrating the use of NtruEncrypt and NtruSign.
+ * @author aninath
+ * Demo @ https://8gwifi.org
  */
 public class NTRUSEncryptionDecryption {
 
