@@ -1,0 +1,410 @@
+<application xmlns="http://wadl.dev.java.net/2009/02">
+<doc xmlns:jersey="http://jersey.java.net/" jersey:generatedBy="Jersey: 1.19.4 05/24/2017 03:20 PM"/>
+<grammars/>
+<resources base="https://8gwifi.org/crypto/rest/">
+<resource path="/pgp">
+<resource path="/{pgpkeygen}">
+<method id="getKeyPair" name="POST">
+<request>
+<representation mediaType="application/x-www-form-urlencoded">
+<param xmlns:xs="http://www.w3.org/2001/XMLSchema" name="p_keysize" style="query" type="xs:string"/>
+<param xmlns:xs="http://www.w3.org/2001/XMLSchema" name="p_identity" style="query" type="xs:string"/>
+<param xmlns:xs="http://www.w3.org/2001/XMLSchema" name="p_passpharse" style="query" type="xs:string"/>
+<param xmlns:xs="http://www.w3.org/2001/XMLSchema" name="p_algo" style="query" type="xs:string"/>
+</representation>
+</request>
+<response>
+<representation mediaType="application/json"/>
+</response>
+</method>
+</resource>
+<resource path="/pgpencrypt">
+<method id="encryptMsg" name="POST">
+<request>
+<representation mediaType="application/x-www-form-urlencoded">
+<param xmlns:xs="http://www.w3.org/2001/XMLSchema" name="p_msg" style="query" type="xs:string"/>
+<param xmlns:xs="http://www.w3.org/2001/XMLSchema" name="p_publicKey" style="query" type="xs:string"/>
+</representation>
+</request>
+<response>
+<representation mediaType="application/json"/>
+</response>
+</method>
+</resource>
+<resource path="/pgpdecrypt">
+<method id="decryptMsg" name="POST">
+<request>
+<representation mediaType="application/x-www-form-urlencoded">
+<param xmlns:xs="http://www.w3.org/2001/XMLSchema" name="p_msg" style="query" type="xs:string"/>
+<param xmlns:xs="http://www.w3.org/2001/XMLSchema" name="p_privateKey" style="query" type="xs:string"/>
+<param xmlns:xs="http://www.w3.org/2001/XMLSchema" name="p_passpharse" style="query" type="xs:string"/>
+</representation>
+</request>
+<response>
+<representation mediaType="application/json"/>
+</response>
+</method>
+</resource>
+<resource path="/{pgpverifyfile}">
+<method id="verifyPGPFileSignature" name="POST">
+<request>
+<representation mediaType="multipart/form-data"/>
+</request>
+<response>
+<representation mediaType="application/json"/>
+</response>
+</method>
+</resource>
+</resource>
+<resource path="/hmac">
+<resource path="/generatehmac">
+<method id="getHMAC" name="POST">
+<request>
+<representation mediaType="application/x-www-form-urlencoded">
+<param xmlns:xs="http://www.w3.org/2001/XMLSchema" name="p_msg" style="query" type="xs:string"/>
+<param xmlns:xs="http://www.w3.org/2001/XMLSchema" name="p_key" style="query" type="xs:string"/>
+<param xmlns:xs="http://www.w3.org/2001/XMLSchema" name="p_algo" style="query" type="xs:string"/>
+</representation>
+</request>
+<response>
+<representation mediaType="application/json"/>
+</response>
+</method>
+</resource>
+</resource>
+<resource path="/cacerts">
+<resource path="/{p_dnsname}">
+<param xmlns:xs="http://www.w3.org/2001/XMLSchema" name="p_dnsname" style="template" type="xs:string"/>
+<method id="getCACerts" name="GET">
+<response>
+<representation mediaType="application/json"/>
+</response>
+</method>
+</resource>
+</resource>
+<resource path="/pbe">
+<resource path="/encrypt">
+<method id="encryptMsg" name="POST">
+<request>
+<representation mediaType="application/x-www-form-urlencoded">
+<param xmlns:xs="http://www.w3.org/2001/XMLSchema" name="p_msg" style="query" type="xs:string"/>
+<param xmlns:xs="http://www.w3.org/2001/XMLSchema" name="p_secretkey" style="query" type="xs:string"/>
+<param xmlns:xs="http://www.w3.org/2001/XMLSchema" name="p_cipher" style="query" type="xs:string"/>
+<param xmlns:xs="http://www.w3.org/2001/XMLSchema" name="p_rounds" style="query" type="xs:string"/>
+</representation>
+</request>
+<response>
+<representation mediaType="application/json"/>
+</response>
+</method>
+</resource>
+<resource path="/decrypt">
+<method id="decryptMsg" name="POST">
+<request>
+<representation mediaType="application/x-www-form-urlencoded">
+<param xmlns:xs="http://www.w3.org/2001/XMLSchema" name="p_msg" style="query" type="xs:string"/>
+<param xmlns:xs="http://www.w3.org/2001/XMLSchema" name="p_secretkey" style="query" type="xs:string"/>
+<param xmlns:xs="http://www.w3.org/2001/XMLSchema" name="p_cipher" style="query" type="xs:string"/>
+<param xmlns:xs="http://www.w3.org/2001/XMLSchema" name="p_rounds" style="query" type="xs:string"/>
+</representation>
+</request>
+<response>
+<representation mediaType="application/json"/>
+</response>
+</method>
+</resource>
+</resource>
+<resource path="/pem">
+<resource path="/parsepem">
+<method id="parserpem" name="POST">
+<request>
+<representation mediaType="application/x-www-form-urlencoded">
+<param xmlns:xs="http://www.w3.org/2001/XMLSchema" name="p_pem" style="query" type="xs:string"/>
+</representation>
+</request>
+<response>
+<representation mediaType="application/json"/>
+</response>
+</method>
+</resource>
+<resource path="/parseencryptedpem">
+<method id="parserpem" name="POST">
+<request>
+<representation mediaType="application/x-www-form-urlencoded">
+<param xmlns:xs="http://www.w3.org/2001/XMLSchema" name="p_pem" style="query" type="xs:string"/>
+<param xmlns:xs="http://www.w3.org/2001/XMLSchema" name="p_password" style="query" type="xs:string"/>
+</representation>
+</request>
+<response>
+<representation mediaType="application/json"/>
+</response>
+</method>
+</resource>
+</resource>
+<resource path="/dsa">
+<resource path="/{p_keysize}">
+<param xmlns:xs="http://www.w3.org/2001/XMLSchema" name="p_keysize" style="template" type="xs:string"/>
+<method id="generateKey" name="GET">
+<response>
+<representation mediaType="application/json"/>
+</response>
+</method>
+</resource>
+<resource path="/sign">
+<method id="sign" name="POST">
+<request>
+<representation mediaType="multipart/form-data"/>
+</request>
+<response>
+<representation mediaType="application/octet-stream"/>
+</response>
+</method>
+</resource>
+<resource path="/verify">
+<method id="verify" name="POST">
+<request>
+<representation mediaType="multipart/form-data"/>
+</request>
+<response>
+<representation mediaType="application/json"/>
+</response>
+</method>
+</resource>
+</resource>
+<resource path="/certs">
+<resource path="/signcsrprivkey">
+<method id="signcsr" name="POST">
+<request>
+<representation mediaType="application/x-www-form-urlencoded">
+<param xmlns:xs="http://www.w3.org/2001/XMLSchema" name="p_pem" style="query" type="xs:string"/>
+<param xmlns:xs="http://www.w3.org/2001/XMLSchema" name="p_privatekey" style="query" type="xs:string"/>
+</representation>
+</request>
+<response>
+<representation mediaType="application/json"/>
+</response>
+</method>
+</resource>
+<resource path="/signcsr">
+<method id="signcsr" name="POST">
+<request>
+<representation mediaType="application/x-www-form-urlencoded">
+<param xmlns:xs="http://www.w3.org/2001/XMLSchema" name="p_pem" style="query" type="xs:string"/>
+</representation>
+</request>
+<response>
+<representation mediaType="application/json"/>
+</response>
+</method>
+</resource>
+<resource path="/genselfsignwithprivkey">
+<method id="generateSelfSign" name="POST">
+<request>
+<representation mediaType="application/x-www-form-urlencoded">
+<param xmlns:xs="http://www.w3.org/2001/XMLSchema" name="p_certinfo" style="query" type="xs:string"/>
+<param xmlns:xs="http://www.w3.org/2001/XMLSchema" name="p_privatekey" style="query" type="xs:string"/>
+<param xmlns:xs="http://www.w3.org/2001/XMLSchema" name="p_version" style="query" type="xs:string"/>
+</representation>
+</request>
+<response>
+<representation mediaType="application/json"/>
+</response>
+</method>
+</resource>
+<resource path="/genselfsign">
+<method id="generateSelfSign" name="POST">
+<request>
+<representation mediaType="application/x-www-form-urlencoded">
+<param xmlns:xs="http://www.w3.org/2001/XMLSchema" name="p_certinfo" style="query" type="xs:string"/>
+<param xmlns:xs="http://www.w3.org/2001/XMLSchema" name="p_version" style="query" type="xs:string"/>
+</representation>
+</request>
+<response>
+<representation mediaType="application/json"/>
+</response>
+</method>
+</resource>
+<resource path="/verifycsrcrtkey">
+<method id="verify" name="POST">
+<request>
+<representation mediaType="application/x-www-form-urlencoded">
+<param xmlns:xs="http://www.w3.org/2001/XMLSchema" name="p_pem1" style="query" type="xs:string"/>
+<param xmlns:xs="http://www.w3.org/2001/XMLSchema" name="p_pem2" style="query" type="xs:string"/>
+</representation>
+</request>
+<response>
+<representation mediaType="application/json"/>
+</response>
+</method>
+</resource>
+</resource>
+<resource path="/ec">
+<resource path="/getecparams">
+<method id="getAllEcParamas" name="GET">
+<response>
+<representation mediaType="application/json"/>
+</response>
+</method>
+</resource>
+<resource path="/generateABkp/{p_ecname}">
+<param xmlns:xs="http://www.w3.org/2001/XMLSchema" name="p_ecname" style="template" type="xs:string"/>
+<method id="generateKeyABPairSharedSecret" name="GET">
+<response>
+<representation mediaType="application/json"/>
+</response>
+</method>
+</resource>
+<resource path="/ecencryptdecrypt">
+<method id="encryptDecryptMsg" name="POST">
+<request>
+<representation mediaType="application/x-www-form-urlencoded">
+<param xmlns:xs="http://www.w3.org/2001/XMLSchema" name="p_msg" style="query" type="xs:string"/>
+<param xmlns:xs="http://www.w3.org/2001/XMLSchema" name="p_publicKey" style="query" type="xs:string"/>
+<param xmlns:xs="http://www.w3.org/2001/XMLSchema" name="p_privatekey" style="query" type="xs:string"/>
+<param xmlns:xs="http://www.w3.org/2001/XMLSchema" name="p_encryptDecrypt" style="query" type="xs:string"/>
+</representation>
+</request>
+<response>
+<representation mediaType="application/json"/>
+</response>
+</method>
+</resource>
+<resource path="/generatekp/{p_ecname}">
+<param xmlns:xs="http://www.w3.org/2001/XMLSchema" name="p_ecname" style="template" type="xs:string"/>
+<method id="generateKeyPair" name="GET">
+<response>
+<representation mediaType="application/json"/>
+</response>
+</method>
+</resource>
+</resource>
+<resource path="/encryptdecrypt">
+<resource path="/encrypt">
+<method id="encryptMsg" name="POST">
+<request>
+<representation mediaType="application/x-www-form-urlencoded">
+<param xmlns:xs="http://www.w3.org/2001/XMLSchema" name="p_msg" style="query" type="xs:string"/>
+<param xmlns:xs="http://www.w3.org/2001/XMLSchema" name="p_secretkey" style="query" type="xs:string"/>
+<param xmlns:xs="http://www.w3.org/2001/XMLSchema" name="p_cipher" style="query" type="xs:string"/>
+</representation>
+</request>
+<response>
+<representation mediaType="application/json"/>
+</response>
+</method>
+</resource>
+<resource path="/decrypt">
+<method id="decryptMsg" name="POST">
+<request>
+<representation mediaType="application/x-www-form-urlencoded">
+<param xmlns:xs="http://www.w3.org/2001/XMLSchema" name="p_msg" style="query" type="xs:string"/>
+<param xmlns:xs="http://www.w3.org/2001/XMLSchema" name="p_secretkey" style="query" type="xs:string"/>
+<param xmlns:xs="http://www.w3.org/2001/XMLSchema" name="p_cipher" style="query" type="xs:string"/>
+</representation>
+</request>
+<response>
+<representation mediaType="application/json"/>
+</response>
+</method>
+</resource>
+</resource>
+<resource path="/scrypt">
+<resource path="/generatehash">
+<method id="generateHash" name="POST">
+<request>
+<representation mediaType="application/x-www-form-urlencoded">
+<param xmlns:xs="http://www.w3.org/2001/XMLSchema" name="p_passphrase" style="query" type="xs:string"/>
+<param xmlns:xs="http://www.w3.org/2001/XMLSchema" name="p_salt" style="query" type="xs:string"/>
+<param xmlns:xs="http://www.w3.org/2001/XMLSchema" name="p_n" style="query" type="xs:string"/>
+<param xmlns:xs="http://www.w3.org/2001/XMLSchema" name="p_r" style="query" type="xs:string"/>
+<param xmlns:xs="http://www.w3.org/2001/XMLSchema" name="p_p" style="query" type="xs:string"/>
+<param xmlns:xs="http://www.w3.org/2001/XMLSchema" name="p_outputlength" style="query" type="xs:string"/>
+</representation>
+</request>
+<response>
+<representation mediaType="application/json"/>
+</response>
+</method>
+</resource>
+<resource path="/verifyhash">
+<method id="verifyHash" name="POST">
+<request>
+<representation mediaType="application/x-www-form-urlencoded">
+<param xmlns:xs="http://www.w3.org/2001/XMLSchema" name="p_rawpassphrase" style="query" type="xs:string"/>
+<param xmlns:xs="http://www.w3.org/2001/XMLSchema" name="p_passphrase" style="query" type="xs:string"/>
+<param xmlns:xs="http://www.w3.org/2001/XMLSchema" name="p_salt" style="query" type="xs:string"/>
+<param xmlns:xs="http://www.w3.org/2001/XMLSchema" name="p_n" style="query" type="xs:string"/>
+<param xmlns:xs="http://www.w3.org/2001/XMLSchema" name="p_r" style="query" type="xs:string"/>
+<param xmlns:xs="http://www.w3.org/2001/XMLSchema" name="p_p" style="query" type="xs:string"/>
+<param xmlns:xs="http://www.w3.org/2001/XMLSchema" name="p_outputlength" style="query" type="xs:string"/>
+</representation>
+</request>
+<response>
+<representation mediaType="application/json"/>
+</response>
+</method>
+</resource>
+</resource>
+<resource path="/rsa">
+<resource path="/rsaencrypt">
+<method id="encryptMsg" name="POST">
+<request>
+<representation mediaType="application/x-www-form-urlencoded">
+<param xmlns:xs="http://www.w3.org/2001/XMLSchema" name="p_msg" style="query" type="xs:string"/>
+<param xmlns:xs="http://www.w3.org/2001/XMLSchema" name="p_key" style="query" type="xs:string"/>
+<param xmlns:xs="http://www.w3.org/2001/XMLSchema" name="p_algo" style="query" type="xs:string"/>
+</representation>
+</request>
+<response>
+<representation mediaType="application/json"/>
+</response>
+</method>
+</resource>
+<resource path="/rsadecrypt">
+<method id="decryptMsg" name="POST">
+<request>
+<representation mediaType="application/x-www-form-urlencoded">
+<param xmlns:xs="http://www.w3.org/2001/XMLSchema" name="p_msg" style="query" type="xs:string"/>
+<param xmlns:xs="http://www.w3.org/2001/XMLSchema" name="p_key" style="query" type="xs:string"/>
+<param xmlns:xs="http://www.w3.org/2001/XMLSchema" name="p_algo" style="query" type="xs:string"/>
+</representation>
+</request>
+<response>
+<representation mediaType="application/json"/>
+</response>
+</method>
+</resource>
+</resource>
+<resource path="/md">
+<resource path="/generate">
+<method id="generateDigest" name="POST">
+<request>
+<representation mediaType="application/x-www-form-urlencoded">
+<param xmlns:xs="http://www.w3.org/2001/XMLSchema" name="p_msg" style="query" type="xs:string"/>
+<param xmlns:xs="http://www.w3.org/2001/XMLSchema" name="p_cipher" style="query" type="xs:string"/>
+</representation>
+</request>
+<response>
+<representation mediaType="application/json"/>
+</response>
+</method>
+</resource>
+</resource>
+<resource path="/ssh">
+<resource path="/keygen">
+<method id="sshkeyGen" name="POST">
+<request>
+<representation mediaType="application/x-www-form-urlencoded">
+<param xmlns:xs="http://www.w3.org/2001/XMLSchema" name="p_algo" style="query" type="xs:string"/>
+<param xmlns:xs="http://www.w3.org/2001/XMLSchema" name="p_passphrase" style="query" type="xs:string"/>
+<param xmlns:xs="http://www.w3.org/2001/XMLSchema" name="p_keysize" style="query" type="xs:string"/>
+</representation>
+</request>
+<response>
+<representation mediaType="application/json"/>
+</response>
+</method>
+</resource>
+</resource>
+</resources>
+</application>
