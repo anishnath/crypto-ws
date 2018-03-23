@@ -106,6 +106,11 @@
     <version>1.2</version>
   </dependency>
 
+  <dependency>
+      <groupId>com.onelogin</groupId>
+      <artifactId>java-saml</artifactId>
+      <version>2.2.0</version>
+  </dependency>
 
 	</dependencies>
 	<build>
