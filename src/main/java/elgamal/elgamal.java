@@ -1,28 +1,60 @@
+package elgamal;
+
+import java.security.Key;
+import java.security.KeyPair;
+import java.security.PrivateKey;
+import java.security.PublicKey;
 import java.security.Security;
+
+import javax.crypto.Cipher;
 
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
 import cacerts.Utils;
 import pem.PemParser;
+import pojo.elgamlpojo;
 
-import java.security.Key;
-import java.security.KeyPair;
-import java.security.KeyPairGenerator;
-import java.security.PrivateKey;
-import java.security.PublicKey;
-import java.security.SecureRandom;
-import java.security.Security;
-
-import javax.crypto.Cipher;
-
+/**
+ * 
+ * @author aninath
+ * Demo @ https://8gwifi.org
+ *
+ */
 public class elgamal {
 
 	static {
 		Security.addProvider(new BouncyCastleProvider());
 	}
 
-	
-	
+	public elgamlpojo generateKeys() throws Exception {
+		return generateKeys(160);
+	}
+
+	public elgamlpojo generateKeys(int keysize) throws Exception {
+		KeyPair pair = Utils.generateRSAKeyPair("ELGAMAL", keysize);
+
+		Key privKey = pair.getPrivate();
+
+		String s = Utils.toBase64Encode(privKey.getEncoded());
+
+		StringBuilder builder = new StringBuilder();
+		builder.append("-----BEGIN PRIVATE KEY-----");
+		builder.append("\n");
+		builder.append(s);
+		builder.append("\n");
+		builder.append("-----END PRIVATE KEY-----");
+
+		String pKey = Utils.toPem(pair.getPublic());
+
+		elgamlpojo elgamlpojo = new elgamlpojo();
+		elgamlpojo.setKeySize(keysize);
+		elgamlpojo.setPublicKey(pKey);
+		elgamlpojo.setPrivateKey(builder.toString());
+
+		return elgamlpojo;
+
+	}
+
 	public String decrypt(String msg, String algo, String key) throws Exception {
 
 		Cipher cipher = Cipher.getInstance(algo, "BC");
@@ -75,7 +107,6 @@ public class elgamal {
 		PublicKey publickey = null;
 		PrivateKey privatekey = null;
 
-
 		if (obj instanceof org.bouncycastle.asn1.x509.SubjectPublicKeyInfo) {
 			publickey = (PublicKey) obj;
 
@@ -109,10 +140,19 @@ public class elgamal {
 	}
 
 	public static void main(String[] args) throws Exception {
+		
+//		for (int i = 0; i < 100000; i++) {
+//			try {
+//				//KeyPair pair = Utils.generateRSAKeyPair("ELGAMAL", i);
+//				System.out.println(i);
+//			} catch (Exception e) {
+//				
+//			}
+//		}
 
 		byte[] input = "ANISHNATHANISHNATHA".getBytes();
 		Cipher cipher = Cipher.getInstance("ELGAMAL", "BC");
-		KeyPair pair = Utils.generateRSAKeyPair("ELGAMAL", 160);
+		KeyPair pair = Utils.generateRSAKeyPair("ELGAMAL", 512);
 		Key pubKey = pair.getPublic();
 		Key privKey = pair.getPrivate();
 
