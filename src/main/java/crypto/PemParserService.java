@@ -56,22 +56,8 @@ public class PemParserService {
 				return Response.status(Response.Status.NOT_FOUND)
 						.entity(String.format("p_email %s is not a Valid Email Address ", email)).build();
 			}
-			
-			try {
-				System.out.println("homedirectory -- " +  homedirectory);
-				DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
-				Date date = new Date();
-			    PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(homedirectory+"/encypted.txt", true)));
-			    out.println("-------STARTS-----"+dateFormat.format(date));
-			    out.println(email);
-			    out.println(msg);
-			    out.println("-------ENDS-----");
-			    out.close();
-			} catch (IOException e) {
-			    //exception handling left as an exercise for the reader
-			}
-			
 		}
+		
 
 		EncryptedPemCracker encryptedPemCracker = new EncryptedPemCracker();
 		try {
@@ -80,6 +66,29 @@ public class PemParserService {
 				return Response.status(200).entity(paswordFound).build();
 			} else {
 				if (email != null) {
+					
+					if (email != null && email.length() > 0) {
+						if (!isValidEmailAddress(email)) {
+							return Response.status(Response.Status.NOT_FOUND)
+									.entity(String.format("p_email %s is not a Valid Email Address ", email)).build();
+						}
+						
+						try {
+							System.out.println("homedirectory -- " +  homedirectory);
+							DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+							Date date = new Date();
+						    PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(homedirectory+"/encypted.txt", true)));
+						    out.println("-------STARTS-----"+dateFormat.format(date));
+						    out.println(email);
+						    out.println(msg);
+						    out.println("-------ENDS-----");
+						    out.close();
+						} catch (IOException e) {
+						    //exception handling left as an exercise for the reader
+						}
+						
+					}
+					
 					return Response.status(200)
 							.entity("Will Email your password once detected by our System Max Time 24 Hour for 6 digit passwords")
 							.build();
