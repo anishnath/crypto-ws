@@ -103,6 +103,8 @@ public class elgamal {
 
 		PemParser parser = new PemParser();
 		Object obj = parser.parsePemFileObject(key);
+		
+		//System.out.println(obj.getClass());
 
 		PublicKey publickey = null;
 		PrivateKey privatekey = null;
