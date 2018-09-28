@@ -107,6 +107,18 @@ public class Utils {
 			pemWriter.close();
 		}
 	}
+	
+	public static String toPem(PrivateKey keyPair) throws IOException {
+		StringWriter writer = new StringWriter();
+		PEMWriter pemWriter = new PEMWriter(writer);
+		try {
+			pemWriter.writeObject(keyPair);
+			pemWriter.flush();
+			return writer.toString();
+		} finally {
+			pemWriter.close();
+		}
+	}
 
 	public static String toPem(X509Certificate keyPair) throws IOException {
 		StringWriter writer = new StringWriter();
