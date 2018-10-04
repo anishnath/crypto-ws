@@ -30,7 +30,9 @@ import org.bouncycastle.cert.ocsp.CertificateStatus;
 import org.bouncycastle.cert.ocsp.OCSPReq;
 import org.bouncycastle.cert.ocsp.OCSPReqBuilder;
 import org.bouncycastle.cert.ocsp.OCSPResp;
+import org.bouncycastle.cert.ocsp.RevokedStatus;
 import org.bouncycastle.cert.ocsp.SingleResp;
+import org.bouncycastle.cert.ocsp.UnknownStatus;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.operator.DigestCalculator;
 import org.bouncycastle.operator.DigestCalculatorProvider;
@@ -351,10 +353,10 @@ public class OCSP {
 						if (status == CertificateStatus.GOOD) {
 							response.append("\t\tCert Status:" + "GOOD"+ "\n");
 							ocsppojo.setCertstatus("GOOD");
-						} else if (status instanceof org.bouncycastle.ocsp.RevokedStatus) {
+						} else if (status instanceof RevokedStatus) {
 							response.append("\t\tCert Status:" + "REVOKED"+ "\n");
 							ocsppojo.setCertstatus("REVOKED");
-						} else if (status instanceof org.bouncycastle.ocsp.UnknownStatus) {
+						} else if (status instanceof UnknownStatus) {
 							response.append("\t\tCert Status:" + "UNKNOWN"+ "\n");
 							ocsppojo.setCertstatus("UNKNOWN");
 						}

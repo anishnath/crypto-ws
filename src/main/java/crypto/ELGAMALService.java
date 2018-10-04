@@ -27,7 +27,7 @@ import pojo.elgamlpojo;
 public class ELGAMALService {
 
 	@GET
-	@Path("/generatekp/{p_keysize}")
+	@Path("/{p_keysize}")
 	@Produces({ "application/json" })
 	public Response generateKeyPair(@PathParam("p_keysize") String keySize) {
 

@@ -1,9 +1,13 @@
 package crypto;
 
+import java.security.KeyPair;
+
 import javax.ws.rs.Consumes;
 import javax.ws.rs.FormParam;
+import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -11,11 +15,70 @@ import javax.ws.rs.core.Response;
 import com.google.gson.Gson;
 
 import cacerts.Utils;
+import dsa.DSASigner;
+import pgp.pgppojo;
 import pojo.EncodedMessage;
 import rsa.RSAEncryptionDecryption;
+import rsa.RSAUtil;
 
 @Path("/rsa")
 public class RSAService {
+	
+	
+	@GET
+	@Path("/{p_keysize}")
+	@Produces({ "application/json" })
+	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+	public Response generateKey(@PathParam("p_keysize") String keysize) {
+
+		
+
+		int keySize = 512;
+		
+		if (keysize == null || keysize.trim().length() == 0) {
+			keySize=512;
+		}
+
+		try {
+			keySize = Integer.parseInt(keysize.trim());
+		} catch (NumberFormatException e) {
+			keySize=512;
+
+		}
+		
+		if (keySize==512 || keySize==1024 || keySize==2048 || keySize==4096 )
+		{
+						
+			try {
+				
+				KeyPair kp = RSAUtil.generateKey(keySize);
+				
+				String privaeKey = Utils.toPem(kp);
+				String publicKey = Utils.toPem(kp.getPublic());
+				
+				pgppojo pgppojo = new pgppojo();
+				
+				pgppojo.setPubliceKey(publicKey);
+				pgppojo.setPrivateKey(privaeKey);
+				
+				Gson gson = new Gson();
+
+				String json = gson.toJson(pgppojo);
+				return Response.status(200).entity(json).build();
+			} catch (Exception e) {
+				e.printStackTrace();
+				return Response.status(Response.Status.NOT_FOUND)
+						.entity(String.format("param1 %s Error Generating Keys  ", e)).build();
+			}
+			
+		}else {
+			return Response.status(Response.Status.NOT_FOUND)
+					.entity(String.format(
+							"p_n %s Valid RSA key Size is 512,1024,2048,4096  ",
+							keysize))
+					.build();
+		}
+	}
 
 	@POST
 	@Path("/rsaencrypt")
