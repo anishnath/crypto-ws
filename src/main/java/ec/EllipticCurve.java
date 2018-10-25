@@ -2,6 +2,7 @@ package ec;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
@@ -16,6 +17,7 @@ import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.SecureRandom;
 import java.security.Security;
+import java.security.Signature;
 import java.security.spec.ECGenParameterSpec;
 import java.util.ArrayList;
 import java.util.Enumeration;
@@ -75,6 +77,103 @@ public class EllipticCurve {
 			e.printStackTrace();
 			return null;
 		}
+	}
+	
+public ecpojo generateKeyPairECDSA(final String ec_name) {
+		
+		try {
+			ecpojo ecpojo = new ecpojo();
+			KeyPairGenerator kpgen = KeyPairGenerator.getInstance("ECDSA", "BC");
+			kpgen.initialize(new ECGenParameterSpec(ec_name), new SecureRandom());
+			KeyPair pairA = kpgen.generateKeyPair();
+			ecpojo.setEcprivateKeyA(Utils.toPem(pairA));
+			ecpojo.setEcpubliceKeyA(Utils.toPem(pairA.getPublic()));
+			return ecpojo;
+			
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
+	
+	public String signMessage (final String param,final String message , final String algo ) throws Exception
+	{
+		
+		byte[] content = param.getBytes();
+		InputStream is = new ByteArrayInputStream(content);
+		InputStreamReader isr = new InputStreamReader(is);
+
+		Reader br = new BufferedReader(isr);
+		PEMParser parser = new PEMParser(br);
+
+		Object obj = parser.readObject();
+
+		
+		
+		
+		
+		PrivateKey thePrivKeyofA = null;
+
+		if (obj instanceof org.bouncycastle.asn1.x509.SubjectPublicKeyInfo) {
+			throw new Exception("EC private Key Required for Signature Generation, Given EC Public Key");
+		}
+
+		if (obj instanceof org.bouncycastle.openssl.PEMKeyPair) {
+			// System.out.println("Here--2");
+			PEMKeyPair kp = (PEMKeyPair) obj;
+			PrivateKeyInfo info = kp.getPrivateKeyInfo();
+			thePrivKeyofA = new JcaPEMKeyConverter().setProvider("BC").getPrivateKey(info);
+			
+			Signature ecdsaSign = Signature.getInstance("SHA256withECDSA", "BC");
+			ecdsaSign.initSign(thePrivKeyofA);
+			ecdsaSign.update(message.getBytes("UTF-8"));
+			byte[] signature = ecdsaSign.sign();
+			String sig =  Utils.toBase64Encode(signature);
+			
+			return sig;
+		}
+		
+		throw new Exception("The Supplied Key is not Valid EC");
+		
+		
+	}
+	
+	public boolean verifyMessage (final String param,final String message , final String signature , final String algo ) throws Exception
+	{
+		
+		byte[] content = param.getBytes();
+		InputStream is = new ByteArrayInputStream(content);
+		InputStreamReader isr = new InputStreamReader(is);
+
+		Reader br = new BufferedReader(isr);
+		PEMParser parser = new PEMParser(br);
+
+		Object obj = parser.readObject();
+
+		//System.out.println("Class-- " + obj.getClass());
+		
+		
+		
+		PrivateKey thePrivKeyofA = null;
+		PublicKey thepubKeyofA = null;
+
+		if (obj instanceof org.bouncycastle.asn1.x509.SubjectPublicKeyInfo) {
+			SubjectPublicKeyInfo eckey = (SubjectPublicKeyInfo) obj;
+			thepubKeyofA = new JcaPEMKeyConverter().setProvider("BC").getPublicKey(eckey);
+			Signature ecdsaVerify = Signature.getInstance("SHA256withECDSA", "BC");
+			ecdsaVerify.initVerify(thepubKeyofA);
+			ecdsaVerify.update(message.getBytes());
+			boolean result = ecdsaVerify.verify(Utils.decodeBASE64(signature));
+			return result;
+			
+		}
+
+		if (obj instanceof org.bouncycastle.openssl.PEMKeyPair) {
+			throw new Exception("EC public Key Required for Verification Given key is EC private Key");
+		}
+		return false;
+		
 	}
 
 	public ecpojo generateKeyABPairSharedSecret(final String ec_name) {
@@ -240,6 +339,23 @@ public class EllipticCurve {
 
 		String plainText = "Hello Anish Demo at 8gwifi.org!";
 		// System.out.println("Original plaintext message: " + plainText);
+		
+		EllipticCurve curve1 = new EllipticCurve();
+		
+		ecpojo ecpojo1 = curve1.generateKeyPairECDSA("sect283k1");
+		
+		System.out.println(ecpojo1.getEcprivateKeyA());
+		System.out.println(ecpojo1.getEcpubliceKeyA());
+		
+		String sig = curve1.signMessage(ecpojo1.getEcprivateKeyA(), "Hello 8gwifi.org","");
+		boolean x = curve1.verifyMessage(ecpojo1.getEcpubliceKeyA(), "Hello 8gwifi.org",sig,"");
+		
+		System.out.println(x);
+		System.out.println("Signature " + sig);
+		
+		//System.out.println("Signature " + sig);
+		
+		System.exit(0);
 
 		String[] validList = { "c2pnb272w1", "c2tnb359v1", "prime256v1", "c2pnb304w1", "c2pnb368w1", "c2tnb431r1",
 				"sect283r1", "sect283k1", "secp256k1", "secp256r1", "sect571r1", "sect571k1", "sect409r1", "sect409k1",
