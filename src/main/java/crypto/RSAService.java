@@ -79,6 +79,92 @@ public class RSAService {
 					.build();
 		}
 	}
+	
+	
+	@POST
+	@Path("/sign")
+	@Produces({ "application/json" })
+	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+	public Response signMsg(@FormParam("p_msg") String msg, @FormParam("p_key") String publicKey,
+			@FormParam("p_algo") String algo) {
+
+		if (msg == null || msg.trim().length() == 0) {
+			return Response.status(Response.Status.NOT_FOUND)
+					.entity(String.format("p_msg %s does not have a Message", msg)).build();
+		}
+
+		if (publicKey == null || publicKey.trim().length() == 0) {
+			return Response.status(Response.Status.NOT_FOUND)
+					.entity(String.format("FOR RSA Signing Message %s RSA private Key required", publicKey)).build();
+		}
+
+		if (algo == null || algo.trim().length() == 0) {
+			algo="SHA256withRSA";
+		}
+		RSAEncryptionDecryption encryptionDecryption = new RSAEncryptionDecryption();
+		try {
+			
+			
+			String signature = encryptionDecryption.signMessage(publicKey, msg, algo);
+			return Response.status(200).entity(signature).build();
+
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			//e.printStackTrace();
+			return Response.status(Response.Status.NOT_FOUND)
+					.entity(String.format("Error Performing RSA Signature generation %s ", e)).build();
+		}
+	}
+	
+	
+	@POST
+	@Path("/verify")
+	@Produces({ "application/json" })
+	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+	public Response verifyMsg(@FormParam("p_msg") String msg, @FormParam("p_sig") String signature, @FormParam("p_key") String publicKey, 
+			@FormParam("p_algo") String algo) {
+
+		if (msg == null || msg.trim().length() == 0) {
+			return Response.status(Response.Status.NOT_FOUND)
+					.entity(String.format("p_msg %s does not have a Message", msg)).build();
+		}
+		
+		if (signature == null || signature.trim().length() == 0) {
+			return Response.status(Response.Status.NOT_FOUND)
+					.entity(String.format("p_sig %s does not have a Signature for Verification", msg)).build();
+		}
+		
+		signature = signature.trim();
+
+		if (publicKey == null || publicKey.trim().length() == 0) {
+			return Response.status(Response.Status.NOT_FOUND)
+					.entity(String.format("FOR RSA Signing Message %s RSA public Key is required", publicKey)).build();
+		}
+
+		if (algo == null || algo.trim().length() == 0) {
+			algo="SHA256withRSA";
+		}
+		RSAEncryptionDecryption encryptionDecryption = new RSAEncryptionDecryption();
+		try {
+			
+			
+			boolean ret = encryptionDecryption.verifyMessage(publicKey, msg, signature, algo);
+			
+			String msgr = "Signature Verification Passed";
+			if(!ret)
+			{
+				msgr = "Signature Verification Failed";
+			}
+			
+			return Response.status(200).entity(msgr).build();
+
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			//e.printStackTrace();
+			return Response.status(Response.Status.NOT_FOUND)
+					.entity(String.format("Error Performing RSA Signatire Validation %s ", e)).build();
+		}
+	}
 
 	@POST
 	@Path("/rsaencrypt")

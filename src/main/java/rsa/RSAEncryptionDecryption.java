@@ -17,6 +17,7 @@ import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
 import org.bouncycastle.crypto.params.RSAKeyParameters;
 import org.bouncycastle.crypto.util.PublicKeyFactory;
+import org.bouncycastle.jcajce.provider.asymmetric.RSA;
 import org.bouncycastle.jcajce.provider.asymmetric.rsa.BCRSAPrivateCrtKey;
 import org.bouncycastle.jcajce.provider.asymmetric.rsa.BCRSAPrivateKey;
 import org.bouncycastle.jcajce.provider.asymmetric.rsa.BCRSAPublicKey;
@@ -195,6 +196,172 @@ public class RSAEncryptionDecryption {
 
 		throw new Exception("Not Able to Determine PemParser Object");
 
+	}
+	
+	
+	public String signMessage(String param, String message, String algo) throws Exception
+	{
+		
+		if(param.contains("BEGIN") && param.contains("PRIVATE"))
+		{
+			
+			byte[] content = param.getBytes();
+			InputStream is = new ByteArrayInputStream(content);
+			InputStreamReader isr = new InputStreamReader(is);
+
+			Reader br = new BufferedReader(isr);
+			PEMParser parser = new PEMParser(br);
+
+			Object obj = parser.readObject();
+			
+			if (obj instanceof org.bouncycastle.asn1.x509.SubjectPublicKeyInfo) {
+				throw new Exception("For RSA Signing Message Pleaee provide RSA Private Key, Input key is Public Key");
+			}
+			if (obj instanceof org.bouncycastle.openssl.PEMKeyPair) {
+				org.bouncycastle.openssl.PEMKeyPair keyPair = (org.bouncycastle.openssl.PEMKeyPair) obj;
+				JcaPEMKeyConverter converter = new JcaPEMKeyConverter().setProvider("BC");
+				PrivateKey privateKey = converter.getPrivateKey((PrivateKeyInfo)keyPair.getPrivateKeyInfo());
+				String signedMessage = RSAUtil.sign(message, privateKey, algo);
+				return signedMessage;
+				
+			}
+
+			if (obj instanceof org.bouncycastle.jce.provider.JCERSAPrivateKey) {
+				JCERSAPrivateKey jcersaPublicKey = (org.bouncycastle.jce.provider.JCERSAPrivateKey) obj;
+				String signedMessage = RSAUtil.sign(message, jcersaPublicKey, algo);
+				return signedMessage;
+			}
+
+			if (obj instanceof org.bouncycastle.jce.provider.JCERSAPublicKey) {
+				throw new Exception("For RSA Signing Message Pleaee provide RSA Private Key");
+			}
+
+			if (obj instanceof java.security.KeyPair) {
+				KeyPair kp = (KeyPair) obj;
+				String signedMessage = RSAUtil.sign(message, kp.getPrivate(), algo);
+				return signedMessage;
+			}
+
+			if (obj instanceof org.bouncycastle.jcajce.provider.asymmetric.rsa.BCRSAPublicKey) {
+				throw new Exception("For RSA Signing Message Pleaee provide RSA Private Key");
+
+			}
+
+			if (obj instanceof org.bouncycastle.jcajce.provider.asymmetric.rsa.BCRSAPrivateKey) {
+				BCRSAPrivateKey bcrsaPrivateKey = (org.bouncycastle.jcajce.provider.asymmetric.rsa.BCRSAPrivateKey) obj;
+				String signedMessage = RSAUtil.sign(message,bcrsaPrivateKey, algo);
+				return signedMessage;
+
+			}
+			
+			if(obj instanceof org.bouncycastle.cert.X509CertificateHolder)
+			{
+				throw new Exception("For RSA Signing Message Pleaee provide RSA Private Key, Input key is X.509 Key");
+			}
+
+			throw new Exception("Not Able to Determine PemParser Object");
+			
+		}
+		
+		PrivateKey pv = RSAUtil.getPrivateKeyFromString(param);
+		
+		if(pv!=null)
+		{
+			String signedMessage = RSAUtil.sign(message,pv, algo);
+			return signedMessage;
+			
+		}
+		else {
+			throw new Exception("Failed to Sign the Message, Somethign Went Wrong, check the supplied Input");
+		}
+		
+		
+	}
+	
+	
+	
+	public boolean verifyMessage(String param, String message, String signature, String algo) throws Exception
+	{
+		
+		if(param.contains("BEGIN") && param.contains("PUBLIC"))
+		{
+			
+			byte[] content = param.getBytes();
+			InputStream is = new ByteArrayInputStream(content);
+			InputStreamReader isr = new InputStreamReader(is);
+
+			Reader br = new BufferedReader(isr);
+			PEMParser parser = new PEMParser(br);
+
+			Object obj = parser.readObject();
+			
+			if (obj instanceof org.bouncycastle.asn1.x509.SubjectPublicKeyInfo) {
+				
+				SubjectPublicKeyInfo subjectPublicKeyInfo = (org.bouncycastle.asn1.x509.SubjectPublicKeyInfo) obj;
+				JcaPEMKeyConverter converter = new JcaPEMKeyConverter().setProvider("BC");
+				PublicKey publicKey = converter.getPublicKey((SubjectPublicKeyInfo) obj);
+				
+				boolean ret=  RSAUtil.verify(message, signature, publicKey, algo);
+				return ret;
+			}
+			if (obj instanceof org.bouncycastle.openssl.PEMKeyPair) {
+				throw new Exception("For RSA Signing Message Pleaee provide RSA Public Key, Input key is Private Key");
+				
+			}
+
+			if (obj instanceof org.bouncycastle.jce.provider.JCERSAPrivateKey) {
+				throw new Exception("For RSA Signing Message Pleaee provide RSA Public Key, Input key is Private Key");
+			}
+
+			if (obj instanceof org.bouncycastle.jce.provider.JCERSAPublicKey) {
+				JCERSAPublicKey jcersaPublicKey = (org.bouncycastle.jce.provider.JCERSAPublicKey) obj;
+				boolean ret=  RSAUtil.verify(message, signature, jcersaPublicKey, algo);
+				return ret;
+				
+			}
+
+			if (obj instanceof java.security.KeyPair) {
+				throw new Exception("For RSA Signing Message Pleaee provide RSA Public Key, Input key is Private Key");
+			}
+
+			if (obj instanceof org.bouncycastle.jcajce.provider.asymmetric.rsa.BCRSAPublicKey) {
+				throw new Exception("For RSA Signing Message Pleaee provide RSA Private Key");
+
+			}
+
+			if (obj instanceof org.bouncycastle.jcajce.provider.asymmetric.rsa.BCRSAPrivateKey) {
+				throw new Exception("For RSA Signing Message Pleaee provide RSA Public Key, Input key is Private Key");
+
+			}
+			
+			if(obj instanceof org.bouncycastle.cert.X509CertificateHolder)
+			{
+				X509CertificateHolder x509CertificateHolder = (org.bouncycastle.cert.X509CertificateHolder)obj;
+				JcaX509CertificateConverter jcaX509CertificateConverter = new JcaX509CertificateConverter().setProvider("BC");
+				X509Certificate x509Certificate =  jcaX509CertificateConverter.getCertificate(x509CertificateHolder);
+				PublicKey publicKey = x509Certificate.getPublicKey();
+				boolean ret=  RSAUtil.verify(message, signature, publicKey, algo);
+				return ret;
+				
+			}
+
+			throw new Exception("Not Able to Determine PemParser Object");
+			
+		}
+		
+		PublicKey pk = RSAUtil.getPublicKeyFromString(param);
+		
+		if(pk!=null)
+		{
+			boolean ret=  RSAUtil.verify(message, signature, pk, algo);
+			return ret;
+			
+		}
+		else {
+			throw new Exception("Failed to Verify the Message, Somethign Went Wrong, check the supplied Input");
+		}
+		
+		
 	}
 
 }

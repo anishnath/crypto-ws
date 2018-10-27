@@ -192,6 +192,26 @@ public class RSAUtil {
 	     //  return  new BASE64Decoder().decodeBuffer(text);
 
 	    }
+	    
+	    public static String sign(String plainText, PrivateKey privateKey,String algo) throws Exception {
+	        Signature privateSignature = Signature.getInstance(algo);
+	        privateSignature.initSign(privateKey);
+	        privateSignature.update(plainText.getBytes("UTF-8"));
+
+	        byte[] signature = privateSignature.sign();
+
+	        return encodeBASE64(signature);
+	    }
+	    
+	    public static boolean verify(String plainText, String signature, PublicKey publicKey,String algo) throws Exception {
+	        Signature publicSignature = Signature.getInstance(algo);
+	        publicSignature.initVerify(publicKey);
+	        publicSignature.update(plainText.getBytes("UTF-8"));
+
+	        byte[] signatureBytes = decodeBASE64(signature);
+
+	        return publicSignature.verify(signatureBytes);
+	    }
 
 
 
@@ -201,6 +221,56 @@ public class RSAUtil {
 	        KeyPair kp = RSAUtil.generateKey(1024);
 	        PublicKey publicKey = kp.getPublic();
 	        String message = "anish";
+	        
+	        String algo = "SHA256withRSA";
+	        
+	       String signMessage=  sign(message, kp.getPrivate(),algo);
+	       
+	       System.out.println(signMessage);
+	       
+	       System.out.println("Verfied" + verify(message, signMessage, publicKey,algo) );
+	       
+	       algo = "md2WithRSA";
+	       signMessage=  sign(message, kp.getPrivate(),algo);
+	       System.out.println("Verfied" + verify(message, signMessage, publicKey,algo) );
+	       
+	       algo="md5WithRSA";
+	       signMessage=  sign(message, kp.getPrivate(),algo);
+	       System.out.println("Verfied" + verify(message, signMessage, publicKey,algo) );
+	       
+	       algo="sha1WithRSA";
+	       signMessage=  sign(message, kp.getPrivate(),algo);
+	       System.out.println("Verfied" + verify(message, signMessage, publicKey,algo) );
+	       
+	       algo="sha384WithRSA";
+	       signMessage=  sign(message, kp.getPrivate(),algo);
+	       System.out.println("Verfied" + verify(message, signMessage, publicKey,algo) );
+	       
+	       algo="sha512WithRSA";
+	       signMessage=  sign(message, kp.getPrivate(),algo);
+	       System.out.println("Verfied" + verify(message, signMessage, publicKey,algo) );
+	       
+	       algo="RSASSA-PSS";
+	       signMessage=  sign(message, kp.getPrivate(),algo);
+	       System.out.println("Verfied" + verify(message, signMessage, publicKey,algo) );
+	       
+	       algo="SHA1WithRSA/PSS";
+	       signMessage=  sign(message, kp.getPrivate(),algo);
+	       System.out.println("Verfied" + verify(message, signMessage, publicKey,algo) );
+	       
+	       algo="SHA224WithRSA/PSS";
+	       signMessage=  sign(message, kp.getPrivate(),algo);
+	       System.out.println("Verfied " + verify(message, signMessage, publicKey,algo) );
+	       
+	       algo="SHA384WithRSA/PSS";
+	       signMessage=  sign(message, kp.getPrivate(),algo);
+	       System.out.println("Verfied " + verify(message, signMessage, publicKey,algo) );
+	       
+	       algo="SHA1withRSAandMGF1";
+	       signMessage=  sign(message, kp.getPrivate(),algo);
+	       System.out.println("Verfied " + verify(message, signMessage, publicKey,algo) );
+	       
+	       System.exit(0);
 
 	        String p = RSAUtil.encodeBASE64(kp.getPublic().getEncoded());
 
@@ -242,13 +312,16 @@ public class RSAUtil {
 	        PrivateKey privatekeyObj = RSAUtil.getPrivateKeyFromString(q);
 
 	        String algobkp = "RSA/ECB/PKCS1Padding";
-	        String algo = "RSA/ECB/OAEPWithSHA-256AndMGF1Padding";
+	         algo = "RSA/ECB/OAEPWithSHA-256AndMGF1Padding";
 
 	        String encryptedMessage =  RSAUtil.encrypt(message,publicKeyObj,algo);
 	        System.out.println(encryptedMessage);
 	        System.out.println();
 	        String decryptMessage =  RSAUtil.decrypt(encryptedMessage,privatekeyObj,algo);
 	        System.out.println(decryptMessage);
+	        
+	        
+	        
 
 
 
