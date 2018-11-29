@@ -10,8 +10,10 @@ import javax.ws.rs.core.Response;
 
 import com.google.gson.Gson;
 
+import cacerts.Utils;
 import cipher.EncryptDecrypt;
 import pbe.PBEEncryptDecrypt;
+import pbe.PBKDFDeriveKey;
 import pojo.EncodedMessage;
 
 
@@ -31,11 +33,13 @@ public class PBEEncryptionService {
 			"PBEWITHSHAAND256BITAES-CBC-BC", "PBEWITHSHAAND3-KEYTRIPLEDES-CBC", "PBEWITHSHAAND40BITRC2-CBC",
 			"PBEWITHSHAAND40BITRC4", "PBEWITHSHAANDIDEA-CBC", "PBEWITHSHAANDTWOFISH-CBC" };
 	
+	private static String[] pbkdf2_algos = { "PBKDF2WithHmacSHA1", "PBKDF2WithHmacSHA1", "PBKDF2WithHmacSHA1","PBKDF2WithHmacSHA256","PBKDF2WithHmacSHA224","PBKDF2WithHmacSHA512" ,"PBKDF2WithHmacSHA384"};
+	
 	@POST
 	@Path("/encrypt")
 	@Produces({ "application/json" })
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-	public Response encryptMsg(@FormParam("p_msg") String msg, @FormParam("p_secretkey") String secretkey, @FormParam("p_cipher") String cipherparamater, @FormParam("p_rounds") String rounds) {
+	public Response encryptMsg(@FormParam("p_msg") String msg, @FormParam("p_secretkey") String secretkey, @FormParam("p_cipher") String cipherparamater, @FormParam("p_rounds") String rounds ) {
 		
 		
 		if (msg == null || msg.trim().length() == 0) {
@@ -98,7 +102,7 @@ public class PBEEncryptionService {
 		}
 		
 		
-		EncryptDecrypt encryptDecrypt  =  new EncryptDecrypt();
+
 		
 		try {
 			String message =PBEEncryptDecrypt.encrypt(msg, secretkey, cipherparamater, round, null);
@@ -113,6 +117,111 @@ public class PBEEncryptionService {
 		}
 		
 	}
+	
+	
+	@POST
+	@Path("/derivekey")
+	@Produces({ "application/json" })
+	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+	public Response deriveKey(@FormParam("p_password") String secretkey, @FormParam("p_cipher") String cipherparamater, @FormParam("p_rounds") String rounds, @FormParam("p_keylength") String keyLength, @FormParam("p_salt") String salt) {
+		
+		
+
+		if (secretkey == null || secretkey.trim().length() == 0) {
+			return Response.status(Response.Status.NOT_FOUND)
+					.entity(String.format("param1 %s password is EMpty or Null", secretkey)).build();
+		}
+
+		if (cipherparamater == null || cipherparamater.trim().length() == 0) {
+			cipherparamater="PBKDF2WithHmacSHA1";
+		}
+		
+		boolean flag=false;
+		cipherparamater = cipherparamater.trim();
+		
+		for (int i = 0; i < pbkdf2_algos.length; i++) {
+			if(pbkdf2_algos[i].equalsIgnoreCase(cipherparamater))
+			{
+				flag=true;
+				break;
+			}
+		}
+		
+		if(!flag)
+		{
+			StringBuilder builder = new StringBuilder();
+			for (int i = 0; i < pbkdf2_algos.length; i++) {
+				builder.append(pbkdf2_algos[i]);
+				builder.append(",");
+			}
+			return Response.status(Response.Status.NOT_FOUND)
+					.entity(String.format("param1 %s cipherparamater is not valid Supported Algos %s", cipherparamater,builder.toString())).build();
+		}
+		
+		if (rounds == null || rounds.trim().length() == 0) {
+			return Response.status(Response.Status.NOT_FOUND)
+					.entity(String.format("param1 %s rounds is not valid ", rounds)).build();
+		}
+		
+		
+		
+		if (keyLength == null || keyLength.trim().length() == 0) {
+			keyLength="32";
+		}
+		
+		int round=0;
+		try
+		{
+			round=  (int) Double.parseDouble(rounds);  
+		}
+		catch(NumberFormatException e)
+		{
+			return Response.status(Response.Status.NOT_FOUND)
+					.entity(String.format("param1 %s rounds is not integer ", rounds)).build();
+		}
+		
+		if(round>50000  || round < 0 )
+		{
+			return Response.status(Response.Status.NOT_FOUND)
+					.entity(String.format("param1 %s Supported rounds 1-49999 ", rounds)).build();
+			
+		}
+		
+		int keylength = 32;
+		
+		try
+		{
+			keylength=  (int) Double.parseDouble(keyLength);  
+		}
+		catch(NumberFormatException e)
+		{
+			keylength =32;
+		}
+		
+		PBKDFDeriveKey pbkdf  =  new PBKDFDeriveKey();
+		EncodedMessage encodedMessage = new EncodedMessage();
+		
+		
+		
+		try {
+			
+			if (salt == null || salt.trim().length() == 0 ||  salt.trim().length() == 1) {
+				encodedMessage =  pbkdf.hashPassword(cipherparamater, secretkey, round, keylength);
+			}
+			else {
+				encodedMessage =  pbkdf.hashPassword(cipherparamater, secretkey, round, keylength, Utils.decodeBASE64(salt));
+			}
+			
+			Gson gson = new Gson();
+			String json = gson.toJson(encodedMessage,EncodedMessage.class);
+			return Response.status(200).entity(json).build();
+		} catch (Exception e) {
+			return Response.status(Response.Status.NOT_FOUND)
+					.entity(String.format("Error in Derive Key  %s ", e)).build();
+		}
+		
+	}
+	
 	
 	@POST
 	@Path("/decrypt")
