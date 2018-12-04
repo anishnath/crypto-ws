@@ -54,7 +54,7 @@ public class CertService {
 	@Path("/signcsrprivkey")
 	@Produces({ "application/json" })
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-	public Response signcsr(@FormParam("p_pem") String msg,@FormParam("p_privatekey") String password) {
+	public Response signcsr(@FormParam("p_pem") String msg,@FormParam("p_privatekey") String password,@FormParam("p_crl") String crl,@FormParam("p_ocsp") String ocsp) {
 		
 		if (msg == null || msg.trim().length() == 0) {
 			return Response.status(Response.Status.NOT_FOUND)
@@ -64,7 +64,7 @@ public class CertService {
 		SignCSR parser = new SignCSR();
 		PemParser parser1 = new PemParser();
 		try {
-			String message = parser.sign(msg, password);
+			String message = parser.sign(msg, password,crl,ocsp);
 			String base64Decoded = parser1.parsePemFile(message);
 			EncodedMessage encodedMessage = new EncodedMessage();
 			encodedMessage.setMessage(message);
