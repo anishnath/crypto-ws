@@ -1,11 +1,33 @@
 package nacl;
 
 import org.abstractj.kalium.crypto.Advanced;
+import org.abstractj.kalium.crypto.Aead;
 import org.abstractj.kalium.crypto.Random;
 
 import cacerts.Utils;
 
 public class nacl {
+	
+	
+	public String aeadencrypt(String plaintext, String aad, byte[] nonce, byte[] key) throws Exception
+	{
+		try {
+			Aead advanced = new Aead(key);
+			byte[] ciphertext = advanced.encrypt(nonce,plaintext.getBytes(), aad.getBytes()); // encrypt
+			return Utils.toHexEncoded(ciphertext);
+		} catch (Exception e) {
+			throw e;
+		}
+	}
+	
+	public String aeaddecrypt(String ciphertext,String aad, byte[] nonce, byte[] key)
+	{
+		byte[]ct = Utils.hexToBytes(ciphertext);
+		Aead advanced = new Aead(key);
+		byte [] plaintext = advanced.decrypt(nonce,ct, aad.getBytes()); // decrypt
+		return new String(plaintext);
+		
+	}
 	
 	public String encrypt(String plaintext, byte[] nonce, byte[] key) throws Exception
 	{
@@ -47,11 +69,29 @@ public class nacl {
        
        nacl nacl = new nacl();
        
-       String enc = nacl.encrypt(pwd, "a23c6e1a4aa987e766ecad497f2f4166fb4117b64adfb8bc".getBytes(), "thisismystrongpasswordof32bitkey".getBytes());
+       String enc = nacl.encrypt(pwd, nonce, "thisismystrongpasswordof32bitkey".getBytes());
        System.out.println(enc);
        String dec = nacl.decrypt(enc, nonce, "thisismystrongpasswordof32bitkey".getBytes());
        
        System.out.println(dec);
+       
+       
+       for (int i = 1; i < 40; i++) {
+    	   
+    	   try {
+    		   
+    		   nonce = random.randomBytes(i);
+			enc = nacl.aeadencrypt(pwd, "aead",nonce, "thisismystrongpasswordof32bitkey".getBytes());
+			   System.out.println(enc + "i== " + i);
+		} catch (Exception e) {
+			 
+		}
+    	   
+		
+	}
+       
+      
+       
         
 	}
 
