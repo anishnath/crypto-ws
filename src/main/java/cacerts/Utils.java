@@ -277,5 +277,13 @@ public class Utils {
 			return false;
 		}
 	}
+	
+	public static byte[] getIV(int size)
+	{
+		SecureRandom randomSecureRandom = new SecureRandom();
+		byte[] iv = new byte[size];
+		randomSecureRandom.nextBytes(iv);
+		return iv;
+	}
 
 }
