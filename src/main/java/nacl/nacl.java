@@ -4,6 +4,7 @@ import org.abstractj.kalium.crypto.Advanced;
 import org.abstractj.kalium.crypto.Aead;
 import org.abstractj.kalium.crypto.Box;
 import org.abstractj.kalium.crypto.Random;
+import org.abstractj.kalium.crypto.SealedBox;
 import org.abstractj.kalium.encoders.Hex;
 import org.abstractj.kalium.keys.KeyPair;
 import org.abstractj.kalium.keys.PrivateKey;
@@ -12,6 +13,32 @@ import org.abstractj.kalium.keys.PublicKey;
 import cacerts.Utils;
 
 public class nacl {
+	
+	
+	public String sealedboxencrypt(String plaintext, String publickey ) throws Exception {
+		try {
+		KeyPair keyPair = new KeyPair();	
+		SealedBox box = new SealedBox(publickey,Hex.HEX);
+		byte[] result = box.encrypt(plaintext.getBytes());
+		return Utils.toHexEncoded(result);
+		} catch (Exception e) {
+			throw e;
+		}
+	}
+	
+	public String sealedboxdecrypt(String ciphertext, String publickey, String privatekey) throws Exception {
+		
+		try {
+		byte[] ct = Utils.hexToBytes(ciphertext);
+		SealedBox box = new SealedBox(publickey,privatekey,Hex.HEX);
+		byte[] result = box.decrypt(ct);
+		return new String(result);
+		} catch (Exception e) {
+			throw e;
+		}
+	}
+	
+	
 
 	public String boxencrypt(String plaintext,String publickey, String privatekey, byte[] nonce ) throws Exception {
 		try {
@@ -129,12 +156,22 @@ public class nacl {
 				 
 				 System.out.println("Box Decrypted"+  dec + "i ==" + i);
 				 
+				 
+					
+				 
 				
 			} catch (Exception e) {
 				//e.printStackTrace();
 				
 			}
 		}
+		
+		
+		enc =nacl.sealedboxencrypt(pwd, "2bfb3554e563470f076d91b2dfbc58944ac0aea4d0ee9ec80ce2df22398bb545");
+		System.out.println("Sealed Box " + enc);
+		//dec = nacl.sealedboxdecrypt(enc,"6cf6a2fb7faf47aa2cbd090ba2f2cfd81cce75ed7fa41f4dc88bd7d3a2374643");
+		 
+		System.out.println("Sealed Box " + dec);
 		
 		
 

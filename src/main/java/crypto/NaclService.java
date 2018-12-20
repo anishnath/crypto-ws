@@ -290,13 +290,13 @@ public class NaclService {
 		if(null==publickey || publickey.trim().length()==0)
 		{
 			return Response.status(Response.Status.NOT_FOUND)
-					.entity(String.format("publickey Key is  EMpty %s", privatekey)).build();
+					.entity(String.format("publickey Key is  EMpty %s", publickey)).build();
 		}
 		
 		if(publickey.length()!=64)
 		{
 			return Response.status(Response.Status.NOT_FOUND)
-					.entity(String.format("publickey Key is  Invalid must of of 32 bit hex(64) %s", privatekey)).build();
+					.entity(String.format("publickey Key is  Invalid must of of 32 bit hex(64) %s", publickey)).build();
 		}
 		
 		if(privatekey.length()!=64)
@@ -412,5 +412,106 @@ public class NaclService {
 		return Response.status(200).entity(encryptedMesage).build();
 		
 	}
+	
+	
+	@POST
+	@Path("/box/seal/decrypt")
+	@Produces({ "application/json" })
+	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+	public Response boxsealdecrypt(@FormParam("p_msg") String message, @FormParam("p_pubkey") String publickey, @FormParam("p_key") String privatekey) 
+	{
+		
+		if(null==message || message.trim().length()==0)
+		{
+			return Response.status(Response.Status.NOT_FOUND)
+					.entity(String.format("Message is  EMpty %s", message)).build();
+		}
+		
+		if(null==privatekey || privatekey.trim().length()==0)
+		{
+			return Response.status(Response.Status.NOT_FOUND)
+					.entity(String.format("Private Key is  EMpty %s", privatekey)).build();
+		}
+		
+		if(null==publickey || publickey.trim().length()==0)
+		{
+			return Response.status(Response.Status.NOT_FOUND)
+					.entity(String.format("publickey Key is  EMpty %s", publickey)).build();
+		}
+		
+		if(publickey.length()!=64)
+		{
+			return Response.status(Response.Status.NOT_FOUND)
+					.entity(String.format("publickey Key is  Invalid must of of 32 bit hex(64) %s", publickey)).build();
+		}
+		
+		
+		
+		if(privatekey.length()!=64)
+		{
+			return Response.status(Response.Status.NOT_FOUND)
+					.entity(String.format("privatekey Key is  Invalid must of of 32 bit hex(64) %s", privatekey)).build();
+		}
+		
+		
+		byte [] iv;
+		
+		
+		nacl nacl = new nacl();
+		String encryptedMesage;
+		try {
+			encryptedMesage = nacl.sealedboxdecrypt(message,publickey,privatekey);
+		} catch (Exception e) {
+			return Response.status(Response.Status.NOT_FOUND)
+					.entity(String.format("Error Message %s ", e)).build();
+		}
+		
+		return Response.status(200).entity(encryptedMesage).build();
+		
+	}
+	
+	
+	@POST
+	@Path("/box/seal/encrypt")
+	@Produces({ "application/json" })
+	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+	public Response boxencrypt(@FormParam("p_msg") String message, @FormParam("p_pubkey") String publickey) 
+	{
+		
+		if(null==message || message.trim().length()==0)
+		{
+			return Response.status(Response.Status.NOT_FOUND)
+					.entity(String.format("Message is  EMpty %s", message)).build();
+		}
+		
+		
+		
+		if(null==publickey || publickey.trim().length()==0)
+		{
+			return Response.status(Response.Status.NOT_FOUND)
+					.entity(String.format("publickey Key is  EMpty %s", publickey)).build();
+		}
+		
+		if(publickey.length()!=64)
+		{
+			return Response.status(Response.Status.NOT_FOUND)
+					.entity(String.format("publickey Key is  Invalid must of of 32 bit hex(64) %s", publickey)).build();
+		}
+		
+		nacl nacl = new nacl();
+		
+		System.out.println();
+		
+		String encryptedMesage;
+		try {
+			encryptedMesage = nacl.sealedboxencrypt(message, publickey);
+		} catch (Exception e) {
+			return Response.status(Response.Status.NOT_FOUND)
+					.entity(String.format("Error Message %s ", e)).build();
+		}
+		return Response.status(200).entity(encryptedMesage).build();
+		
+	}
+	
 
 }
