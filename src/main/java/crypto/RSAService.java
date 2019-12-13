@@ -167,7 +167,7 @@ public class RSAService {
 	}
 
 	@POST
-	@Path("/rsaencrypt")
+	@Path("/encrypt")
 	@Produces({ "application/json" })
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	public Response encryptMsg(@FormParam("p_msg") String msg, @FormParam("p_key") String publicKey,
