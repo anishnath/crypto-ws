@@ -197,7 +197,7 @@ public class JwkKeyGenerator {
 		} catch (Exception e) {
 			// IGNORE This may be EC Try it
 			
-			
+			e.printStackTrace();
 		}
 		
 		}else {
@@ -205,10 +205,15 @@ public class JwkKeyGenerator {
 
 			try {
 				ECKey ecKey = (ECKey)JWK.parse(input);
+				try{
 				jwkpojo.setPrivateKey(Utils.toPem(ecKey.toKeyPair()));
+				}catch (Exception e) {}
+				try{
 				jwkpojo.setPublicKey(Utils.toPem(ecKey.toPublicKey()));
+				}catch (Exception e) {}
 				return jwkpojo;
 			} catch (Exception e) {
+				//e.printStackTrace();
 				throw new Exception ("Provided Input not recognized as Valid JWK for RSA and EC");
 			}
 
