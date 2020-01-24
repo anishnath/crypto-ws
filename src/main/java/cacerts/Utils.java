@@ -16,6 +16,7 @@ import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.SecureRandom;
 import java.security.cert.X509Certificate;
+import java.security.spec.ECGenParameterSpec;
 import java.util.Random;
 
 import javax.crypto.Cipher;
@@ -29,6 +30,7 @@ import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.Hex;
 import org.bouncycastle.openssl.PEMWriter;
 
+import pojo.ecpojo;
 import sun.misc.BASE64Decoder;
 import sun.misc.BASE64Encoder;
 
@@ -284,6 +286,22 @@ public class Utils {
 		byte[] iv = new byte[size];
 		randomSecureRandom.nextBytes(iv);
 		return iv;
+	}
+	
+	public static KeyPair generateKeyPairECDSA(final String ec_name) {
+		
+		try {
+			
+			KeyPairGenerator kpgen = KeyPairGenerator.getInstance("EC", "BC");
+			kpgen.initialize(new ECGenParameterSpec(ec_name), new SecureRandom());
+			KeyPair pairA = kpgen.generateKeyPair();
+			return pairA;
+			
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		}
 	}
 
 }
