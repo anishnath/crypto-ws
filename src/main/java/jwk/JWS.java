@@ -183,7 +183,7 @@ public class JWS {
 			jwspojo.setSharedSecret(Utils.toBase64Encode(sharedSecret));
 			jwspojo.setHeader(header.toString());
 
-			System.out.println(jwspojo);
+			//System.out.println(jwspojo);
 			
 		}
 		
@@ -207,7 +207,7 @@ public class JWS {
 			jwspojo.setPublicKey(Utils.toPem(kp.getPublic()));
 			jwspojo.setHeader(header.toString());
 
-			System.out.println(jwspojo);
+			//System.out.println(jwspojo);
 		}
 		
 		if(algo.equalsIgnoreCase("ES256") || algo.equalsIgnoreCase("ES384") || algo.equalsIgnoreCase("ES512") ) 
