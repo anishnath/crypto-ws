@@ -102,6 +102,33 @@ public class PemParserService {
 		}
 
 	}
+	
+	@POST
+	@Path("/extractpublic")
+	@Produces({ "application/json" })
+	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+	public Response extractPublicKey(@FormParam("p_pem") String msg,@FormParam("p_password") String password) {
+
+		if (msg == null || msg.trim().length() == 0) {
+			return Response.status(Response.Status.NOT_FOUND)
+					.entity(String.format("p_msg %s does not have a Pem Message", msg)).build();
+		}
+
+		PemParser parser = new PemParser();
+		try {
+			String message = parser.extractPublicKey(msg, password);
+			EncodedMessage encodedMessage = new EncodedMessage();
+			encodedMessage.setMessage(message.toString());
+			Gson gson = new Gson();
+			String json = gson.toJson(encodedMessage, EncodedMessage.class);
+			return Response.status(200).entity(json).build();
+
+		} catch (Exception e) {
+			e.printStackTrace();
+			return Response.status(Response.Status.NOT_FOUND).entity(String.format("Error Performing Parsing %s ", e))
+					.build();
+		}
+	}
 
 	@POST
 	@Path("/parsepem")

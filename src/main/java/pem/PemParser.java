@@ -6,12 +6,20 @@ import java.io.FileReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.math.BigInteger;
+import java.security.KeyFactory;
+import java.security.KeyPair;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.Security;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509CRL;
 import java.security.cert.X509Certificate;
+import java.security.interfaces.DSAParams;
+import java.security.interfaces.DSAPrivateKey;
+import java.security.spec.DSAPublicKeySpec;
+import java.security.spec.ECPublicKeySpec;
+import java.security.spec.RSAPublicKeySpec;
 
 import org.bouncycastle.asn1.cms.ContentInfo;
 import org.bouncycastle.asn1.pkcs.Attribute;
@@ -22,7 +30,11 @@ import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.cert.X509CRLHolder;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.jcajce.JcaX509CRLConverter;
+import org.bouncycastle.jcajce.provider.asymmetric.dsa.BCDSAPrivateKey;
+import org.bouncycastle.jcajce.provider.asymmetric.ec.BCECPrivateKey;
+import org.bouncycastle.jcajce.provider.asymmetric.rsa.BCRSAPrivateCrtKey;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.jce.spec.ECNamedCurveSpec;
 import org.bouncycastle.openssl.PEMDecryptorProvider;
 import org.bouncycastle.openssl.PEMEncryptedKeyPair;
 import org.bouncycastle.openssl.PEMKeyPair;
@@ -172,7 +184,7 @@ public class PemParser {
 
 			Object obj = parser.readObject();
 
-			System.out.println("PemParser Class-- " + obj.getClass());
+			System.out.println("PemParser Class1-- " + obj.getClass());
 			StringBuilder builder = new StringBuilder();
 
 			if (obj instanceof PKCS8EncryptedPrivateKeyInfo) {
@@ -352,11 +364,187 @@ public class PemParser {
 			throw new Exception(e);
 		}
 	}
+	
+	public String extractPublicKey(final String data, final String password) throws Exception {
+
+		try {
+			if (data == null || data.isEmpty()) {
+				throw new Exception("Input PEM Data is Missing");
+			}
+
+			byte[] content = data.trim().getBytes();
+
+			InputStream is = new ByteArrayInputStream(content);
+			InputStreamReader isr = new InputStreamReader(is);
+
+			Reader br = new BufferedReader(isr);
+
+			PEMParser parser = new PEMParser(br);
+
+			Object obj = parser.readObject();
+
+			//System.out.println("PemParser Class-- " + obj.getClass());
+			StringBuilder builder = new StringBuilder();
+
+			if (obj instanceof PKCS8EncryptedPrivateKeyInfo) {
+				PKCS8EncryptedPrivateKeyInfo encryptedPrivateKeyInfo = (org.bouncycastle.pkcs.PKCS8EncryptedPrivateKeyInfo) obj;
+
+				InputDecryptorProvider inputDecryptorProvider = new JcePKCSPBEInputDecryptorProviderBuilder()
+						.build(password.toCharArray());
+
+				PrivateKeyInfo privateKeyinfo = encryptedPrivateKeyInfo.decryptPrivateKeyInfo(inputDecryptorProvider);
+				JcaPEMKeyConverter jcaPEMKeyConverter = new JcaPEMKeyConverter().setProvider("BC");
+				PrivateKey privateKey = jcaPEMKeyConverter.getPrivateKey(privateKeyinfo);
+				
+				PublicKey publickey;
+				
+				try{
+					//First Try RSA
+					BCRSAPrivateCrtKey privateCrtKey = (org.bouncycastle.jcajce.provider.asymmetric.rsa.BCRSAPrivateCrtKey) privateKey;
+					RSAPublicKeySpec publicKeySpec = new RSAPublicKeySpec(privateCrtKey.getModulus(),
+							privateCrtKey.getPublicExponent());
+
+					KeyFactory keyFactory = KeyFactory.getInstance("RSA");
+					publickey = keyFactory.generatePublic(publicKeySpec);
+					return Utils.toPem(publickey);
+					
+				}catch(Exception ex)
+				{
+					//Then  Try EC
+					
+					try
+					{
+					BCECPrivateKey  privateCrtKey = (org.bouncycastle.jcajce.provider.asymmetric.ec.BCECPrivateKey)obj;
+					ECNamedCurveSpec ecNamedCurveSpec = (ECNamedCurveSpec) privateCrtKey.getParams();
+					ECPublicKeySpec publicKeySpec = new ECPublicKeySpec(ecNamedCurveSpec.getGenerator(),ecNamedCurveSpec);
+					KeyFactory keyFactory = KeyFactory.getInstance("EC");
+					publickey = keyFactory.generatePublic(publicKeySpec);
+					return Utils.toPem(publickey);
+					}catch(Exception e)
+					{
+						try {
+							//Finally Try DSA
+							DSAPrivateKey dsa = (DSAPrivateKey) privateKey;
+							DSAParams params = dsa.getParams();
+							BigInteger g = params.getG();
+							BigInteger p = params.getP();
+							BigInteger q = params.getQ();
+							BigInteger x = dsa.getX();
+							BigInteger y = q.modPow( x, p );
+							DSAPublicKeySpec dsaKeySpec = new DSAPublicKeySpec(y, p, q, g);
+							publickey = KeyFactory.getInstance("DSA").generatePublic(dsaKeySpec);
+							return Utils.toPem(publickey);
+						} catch (Exception e1) {
+							// TODO Auto-generated catch block
+							throw new Exception("Not Able to Determine PEM Parser Object");
+						}
+					}
+				}
+
+			}
+
+			if (obj instanceof org.bouncycastle.openssl.PEMEncryptedKeyPair) {
+				PEMEncryptedKeyPair encryptedKeyPair = (PEMEncryptedKeyPair) obj;
+				PEMDecryptorProvider decProv = new JcePEMDecryptorProviderBuilder().build(password.toCharArray());
+				PEMKeyPair pemKeyPair = encryptedKeyPair.decryptKeyPair(decProv);
+				PrivateKeyInfo privateKeyInfo = pemKeyPair.getPrivateKeyInfo();
+
+				SubjectPublicKeyInfo subjectPublicKeyInfo = pemKeyPair.getPublicKeyInfo();
+
+				JcaPEMKeyConverter jcaPEMKeyConverter = new JcaPEMKeyConverter().setProvider("BC");
+				PrivateKey privateKey = jcaPEMKeyConverter.getPrivateKey(privateKeyInfo);
+				PublicKey publickey = jcaPEMKeyConverter.getPublicKey(subjectPublicKeyInfo);
+				return Utils.toPem(publickey);
+				
+
+			}
+
+			if (obj instanceof org.bouncycastle.openssl.PEMKeyPair) {
+				PEMKeyPair pemKeyPair = (PEMKeyPair) obj;
+				PrivateKeyInfo privateKeyInfo = pemKeyPair.getPrivateKeyInfo();
+				SubjectPublicKeyInfo subjectPublicKeyInfo = pemKeyPair.getPublicKeyInfo();
+
+				JcaPEMKeyConverter jcaPEMKeyConverter = new JcaPEMKeyConverter().setProvider("BC");
+				PrivateKey privateKey = jcaPEMKeyConverter.getPrivateKey(privateKeyInfo);				
+				PublicKey publickey = jcaPEMKeyConverter.getPublicKey(subjectPublicKeyInfo);
+				return Utils.toPem(publickey);
+				
+				
+			}
+
+
+			if (obj instanceof org.bouncycastle.asn1.pkcs.PrivateKeyInfo) {
+				PrivateKeyInfo keyInfo = (PrivateKeyInfo) obj;
+				JcaPEMKeyConverter jcaPEMKeyConverter = new JcaPEMKeyConverter().setProvider("BC");
+				PrivateKey privateKey = jcaPEMKeyConverter.getPrivateKey(keyInfo);
+				
+				PublicKey publickey;
+				
+				try{
+					//First Try RSA
+					BCRSAPrivateCrtKey privateCrtKey = (org.bouncycastle.jcajce.provider.asymmetric.rsa.BCRSAPrivateCrtKey) privateKey;
+					RSAPublicKeySpec publicKeySpec = new RSAPublicKeySpec(privateCrtKey.getModulus(),
+							privateCrtKey.getPublicExponent());
+
+					KeyFactory keyFactory = KeyFactory.getInstance("RSA");
+					publickey = keyFactory.generatePublic(publicKeySpec);
+					return Utils.toPem(publickey);
+					
+				}catch(Exception ex)
+				{
+					//Then  Try EC
+					
+					try
+					{
+					BCECPrivateKey  privateCrtKey = (org.bouncycastle.jcajce.provider.asymmetric.ec.BCECPrivateKey)obj;
+					ECNamedCurveSpec ecNamedCurveSpec = (ECNamedCurveSpec) privateCrtKey.getParams();
+					ECPublicKeySpec publicKeySpec = new ECPublicKeySpec(ecNamedCurveSpec.getGenerator(),ecNamedCurveSpec);
+					KeyFactory keyFactory = KeyFactory.getInstance("EC");
+					publickey = keyFactory.generatePublic(publicKeySpec);
+					return Utils.toPem(publickey);
+					}catch(Exception e)
+					{
+						try {
+							//Finally Try DSA
+							DSAPrivateKey dsa = (DSAPrivateKey) privateKey;
+							DSAParams params = dsa.getParams();
+							BigInteger g = params.getG();
+							BigInteger p = params.getP();
+							BigInteger q = params.getQ();
+							BigInteger x = dsa.getX();
+							BigInteger y = q.modPow( x, p );
+							DSAPublicKeySpec dsaKeySpec = new DSAPublicKeySpec(y, p, q, g);
+							publickey = KeyFactory.getInstance("DSA").generatePublic(dsaKeySpec);
+							return Utils.toPem(publickey);
+						} catch (Exception e1) {
+							// TODO Auto-generated catch block
+							throw new Exception("Not Able to Determine PEM Parser Object");
+						}
+					}
+				}
+				
+				
+
+			}
+
+			
+
+			throw new Exception("Not Able to Determine PEM Parser Object");
+
+		} catch (Exception e) {
+			throw new Exception(e);
+		}
+	}
 
 	public static void main(String[] args) throws Exception {
+		
+		KeyPair kp = Utils.generateRSAKeyPair("DSA", 1024);
+		//System.out.println(Utils.toPem(kp));
+		
+		//System.exit(0);
 
 		String everything = "";
-		BufferedReader br = new BufferedReader(new FileReader("x509.txt"));
+		BufferedReader br = new BufferedReader(new FileReader("ec.key"));
 		try {
 			StringBuilder sb = new StringBuilder();
 			String line = br.readLine();
@@ -372,7 +560,7 @@ public class PemParser {
 		}
 		PemParser parser = new PemParser();
 		try {
-			String x = parser.parsePemFile(everything, "123456");
+			String x = parser.extractPublicKey(everything, "123456");
 			System.out.println(x);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
