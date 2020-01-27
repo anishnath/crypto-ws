@@ -11,13 +11,16 @@ import java.security.Security;
 import java.security.interfaces.ECPublicKey;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
+import java.security.spec.ECPublicKeySpec;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.RSAPublicKeySpec;
 import java.text.ParseException;
 import java.util.UUID;
 
+import org.bouncycastle.jcajce.provider.asymmetric.ec.BCECPrivateKey;
 import org.bouncycastle.jcajce.provider.asymmetric.rsa.BCRSAPrivateCrtKey;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.jce.spec.ECNamedCurveSpec;
 
 import com.nimbusds.jose.Algorithm;
 import com.nimbusds.jose.JOSEException;
@@ -30,6 +33,7 @@ import com.nimbusds.jose.JWSVerifier;
 import com.nimbusds.jose.KeyLengthException;
 import com.nimbusds.jose.Payload;
 import com.nimbusds.jose.crypto.ECDSASigner;
+import com.nimbusds.jose.crypto.ECDSAVerifier;
 import com.nimbusds.jose.crypto.MACSigner;
 import com.nimbusds.jose.crypto.MACVerifier;
 import com.nimbusds.jose.crypto.RSASSASigner;
@@ -118,32 +122,131 @@ public class JWS {
 		String pp = "{\n" + "  \"sub\": \"1234567890\",\n" + "  \"name\": \"John Doe\",\n" + "  \"iat\": 1516239022\n"
 				+ "}";
 		
+	     String ecKey = "-----BEGIN EC PRIVATE KEY-----\n" +
+	                "MIGkAgEBBDCDf1YDv40Afo7rhgMP7H2qEokTfn2HQqsxCTIw5aBvYeWL8WNPGj2J\n" +
+	                "n4knhMcH/GOgBwYFK4EEACKhZANiAAQwReUQEcPxQ+8KTM4rPj3w62Q4ssMOLm8t\n" +
+	                "B02Mp5MZEfoB5TfsFPJqnrHJ/mLVYgQPFY7T0OcHx7TtJgpLLMWmx0Lm+npGBa3u\n" +
+	                "whwletgqqD+u0dWHnWkfnSdnDJN3zHY=\n" +
+	                "-----END EC PRIVATE KEY-----";
+	     
+	     String serialized = "eyJraWQiOiJmYmM1MDY5Zi0zZmE0LTRkZmEtYjcxOS00MDhmNTM3ZGIzZjciLCJhbGciOiJFUzM4NCJ9.ewogICJzdWIiOiAiMTIzNDU2Nzg5MCIsCiAgIm5hbWUiOiAiSm9obiBEb2UiLAogICJpYXQiOiAxNTE2MjM5MDIyCn0.bNnI802tg1MsNAextW4qGyRq9d5z5-CTl5Dw93WEOLka0rVJ4ccB4_zFjqe9rBJsn18tFRgq1Mmy7BugqyJ6RzZbT6nMPuw-BFwXNRhLSNsv8n6uhKOy263urxIIVRi9";
+		
+	     //System.out.println(rsaPrivatekey);
+	     
+	     
+	     String pubKey = "-----BEGIN PUBLIC KEY-----\n" +
+	                "MIGbMBAGByqGSM49AgEGBSuBBAAjA4GGAAQAUv/w4x8pgm9U7J6CC/aRRG6JxJrj\n" +
+	                "xCWUaQn4PcN36vO4Mqug6IlC8q/kZoG6KMzW/J0GssPLQTs/Cd3RXG6VUREBoYwe\n" +
+	                "JZ0AOxbDAExxJj74lGcp3m84uK2Mue6yl/+ORNJgyDc1Rk8CxWHfQeajABqA1CQ0\n" +
+	                "AWKRJt9SsNI5wK5nq0A=\n" +
+	                "-----END PUBLIC KEY-----";
 		
 		
 		//rsaVerifier(rsaPrivatekey,"PS384",pp);
 		JWS jws  = new JWS();
+		System.out.println(jws.deterMineObjectAndVerify(null, null, serialized, null, null, pubKey));
+	//	System.out.println(jws.deterMineObjectAndSign(ecKey,"ES384",pp));
 		String[] arr = new String[]{"HS256","HS384","HS512","RS256","RS384","RS512","PS256","PS384","PS512","ES256","ES384","ES512"};
+		//System.out.println(jws.generateKey("ES256",pp));
+		//System.out.println(jws.generateKey("ES384",pp));
+		//System.out.println(jws.generateKey("ES512",pp));
 		for (int i = 0; i < arr.length; i++) {
-			System.out.println(jws.generateKey("PS512",pp));
+		//	System.out.println(jws.generateKey("ES384",pp));
 			break;
 		}
 
 	}
+	
+	public  boolean deterMineObjectAndVerify(final String sharedsecret,String singature, String serialzed, String algo,String payload, String publickey) throws Exception {
+		
+		JWSObject jwsObject = JWSObject.parse(serialzed);
+		boolean isValid = false;
+		if(sharedsecret!=null)
+		{
+			JWSVerifier verifier = new MACVerifier(sharedsecret);
+			isValid = jwsObject.verify(verifier);
+		}
+		
+		System.out.println(jwsObject.getPayload().toString());
+		
+		
+		PemParser pem = new PemParser();
+		Object obj = pem.parsePemFileObject(publickey);
+		
+		System.out.println(obj.getClass());
+		
+		
+		return isValid;
+		
+	}
+	
+	
 
-	public static void rsaVerifier(final String privateKey,String algo,String payload) throws Exception {
+	public  jwspojo deterMineObjectAndSign(final String privateKey,String algo,String payload) throws Exception {
 		// macVerifier();
 
 		PemParser pem = new PemParser();
 		Object obj = pem.parsePemFileObject(privateKey);
+		
+		//System.out.println(obj.getClass());
 
 		if (obj instanceof org.bouncycastle.jcajce.provider.asymmetric.rsa.BCRSAPrivateCrtKey) {
-			RSASingerVerifier(payload,algo, obj);
+			return RSASinger(payload,algo, obj);
 		}
 
 		if (obj instanceof org.bouncycastle.jce.provider.JCERSAPrivateKey) {
-			RSASingerVerifier(payload,algo, obj);
+			return RSASinger(payload,algo, obj);
 
 		}
+		if (obj instanceof org.bouncycastle.jcajce.provider.asymmetric.ec.BCECPrivateKey)
+		{
+			return ECSinger(payload,algo, obj);
+		}
+		
+		return null;
+	}
+	
+	public jwspojo sign(String algo, String payload,String sharedSecret) throws Exception
+	{
+		return sign(algo, payload, sharedSecret,null);
+	}
+	
+	public jwspojo sign(String algo, String payload,String sharedSecret,String privatekey) throws Exception
+	{
+		
+		jwspojo jwspojo = new jwspojo();
+		
+		if(algo.equalsIgnoreCase("HS256") || algo.equalsIgnoreCase("HS384") || algo.equalsIgnoreCase("HS512"))
+		{
+			JWSSigner signer = new MACSigner(sharedSecret.getBytes("UTF-8"));
+			JWSAlgorithm jwsAlgorithm = new JWSAlgorithm(algo);
+			JWSObject jwsObject = new JWSObject(new JWSHeader(jwsAlgorithm),new Payload(payload));
+			// Apply the HMAC
+			jwsObject.sign(signer);
+			JWSHeader header = jwsObject.getHeader();
+			
+			jwspojo.setSerialize(jwsObject.serialize());
+			jwspojo.setSignature(jwsObject.getSignature().toString());
+			jwspojo.setState(jwsObject.getState().name());
+			jwspojo.setHeader(header.toString());
+			
+
+		}
+		
+		if(algo.equalsIgnoreCase("RS256") || algo.equalsIgnoreCase("RS384") || algo.equalsIgnoreCase("RS512") 
+				|| algo.equalsIgnoreCase("PS256") || algo.equalsIgnoreCase("PS384") 
+				|| algo.equalsIgnoreCase("PS512")
+				|| algo.equalsIgnoreCase("ES256")
+				|| algo.equalsIgnoreCase("ES384")
+				|| algo.equalsIgnoreCase("ES512"))
+		{
+			return deterMineObjectAndSign(privatekey, algo, payload);
+		}
+		
+		
+		
+		return jwspojo;
+		
 	}
 	
 	public  jwspojo generateKey(String algo,String payload) throws Exception
@@ -182,6 +285,8 @@ public class JWS {
 			jwspojo.setState(jwsObject.getState().name());
 			jwspojo.setSharedSecret(Utils.toBase64Encode(sharedSecret));
 			jwspojo.setHeader(header.toString());
+			
+			
 
 			//System.out.println(jwspojo);
 			
@@ -230,7 +335,9 @@ public class JWS {
 			JWSAlgorithm jwsAlgorithm = new JWSAlgorithm(algo);
 			//Curve curve = new Curve(algo);
 			KeyPair kp =  Utils.generateKeyPairECDSA(curvename);
+			//System.out.println("Algo " + algo);
 			//System.out.println(Utils.toPem(kp));
+			//System.out.println(Utils.toPem(kp.getPublic()));
 			ECPublicKey publicKey = (ECPublicKey)kp.getPublic();
 			
 			ECKey ecKey = new ECKey.Builder(curve, publicKey).privateKey(kp.getPrivate()).keyUse(KeyUse.SIGNATURE)
@@ -260,12 +367,82 @@ public class JWS {
 		
 		
 	}
+	
+	private jwspojo ECSinger(String pp,String algo, Object obj) throws Exception
+	{
+		jwspojo jwspojo = new jwspojo();
+		PublicKey publickey;
+		BCECPrivateKey  privateCrtKey = (org.bouncycastle.jcajce.provider.asymmetric.ec.BCECPrivateKey)obj;
+		ECNamedCurveSpec ecNamedCurveSpec = (ECNamedCurveSpec) privateCrtKey.getParams();
+		
+		//System.out.println(ecNamedCurveSpec.getName());
+		
+		String curvename="secp256r1";
+		Curve curve =null;
+		
+		if("secp256r1".equalsIgnoreCase(ecNamedCurveSpec.getName()))
+		{
+			curve =Curve.P_256;
+		}
+		
+		
+		if("secp384r1".equalsIgnoreCase(ecNamedCurveSpec.getName()))
+		{
+			curvename="secp384r1";
+			curve =Curve.P_384;
+		}
+		if("secp521r1".equalsIgnoreCase(ecNamedCurveSpec.getName()))
+		{
+			curvename="secp521r1";
+			curve =Curve.P_521;
+		}
+		
+		if(curve==null)
+		{
+			throw new Exception("The EC Private Key curve name is "+ ecNamedCurveSpec.getName() + " JWS Supported curve is secp256r1,secp384r1,secp521r1 ");
+		}
+		
+		//Curve curve = new Curve(ecNamedCurveSpec.getName());
+		
+		ECPublicKeySpec publicKeySpec = new ECPublicKeySpec(ecNamedCurveSpec.getGenerator(),ecNamedCurveSpec);
+		
+		KeyFactory keyFactory = KeyFactory.getInstance("EC");
+		
+		publickey = keyFactory.generatePublic(publicKeySpec);
+		
+		//System.out.println(Utils.toPem(publickey));
+		
+		ECPublicKey  pub1 = (ECPublicKey)publickey;
+		
+		ECKey ecJWK = new ECKey.Builder(curve, pub1).privateKey(privateCrtKey).keyUse(KeyUse.SIGNATURE)
+				.algorithm(new Algorithm(algo)).keyID(UUID.randomUUID().toString()).build();
+		JWSSigner signer = new ECDSASigner(ecJWK);
+		JWSAlgorithm jwsAlgorithm = new JWSAlgorithm(algo);
+		JWSObject jwsObject = new JWSObject(
+				new JWSHeader.Builder(jwsAlgorithm).keyID(ecJWK.getKeyID()).build(), new Payload(pp));
+		// Compute the EC signature
+		jwsObject.sign(signer);
+		
+		
+		JWSHeader header = jwsObject.getHeader();
+		
+		jwspojo.setSerialize(jwsObject.serialize());
+		jwspojo.setSignature(jwsObject.getSignature().toString());
+		jwspojo.setState(jwsObject.getState().name());
+		//jwspojo.setPrivateKey(Utils.toPem(kp));
+		//jwspojo.setPublicKey(Utils.toPem(kp.getPublic()));
+		jwspojo.setHeader(header.toString());
+		
+		return jwspojo;
+		
+		
+	}
 
-	private static void RSASingerVerifier(String pp,String algo, Object obj)
-			throws NoSuchAlgorithmException, InvalidKeySpecException, IOException, JOSEException, ParseException {
+	private  jwspojo RSASinger(String pp,String algo, Object obj)
+			throws Exception {
 		PublicKey publickey;
 		BCRSAPrivateCrtKey privateCrtKey = (org.bouncycastle.jcajce.provider.asymmetric.rsa.BCRSAPrivateCrtKey) obj;
-		System.out.println("Her2---");
+		//System.out.println("Her2---");
 
 		RSAPublicKeySpec publicKeySpec = new RSAPublicKeySpec(privateCrtKey.getModulus(),
 				privateCrtKey.getPublicExponent());
@@ -273,8 +450,8 @@ public class JWS {
 		KeyFactory keyFactory = KeyFactory.getInstance("RSA");
 		publickey = keyFactory.generatePublic(publicKeySpec);
 
-		System.out.println(Utils.toPem(publickey));
-		System.out.println(Utils.toPem(privateCrtKey));
+		//System.out.println(Utils.toPem(publickey));
+		//System.out.println(Utils.toPem(privateCrtKey));
 
 		RSAPublicKey pub1 = (RSAPublicKey) publickey;
 
@@ -293,36 +470,46 @@ public class JWS {
 
 		String s = jwsObject.serialize();
 
-		System.out.println("--> " + s);
+		//System.out.println("--> " + s);
 
 		// To parse the JWS and verify it, e.g. on client-side
 		jwsObject = JWSObject.parse(s);
 
-		System.out.println("<---" + jwsObject.getParsedString());
+		//System.out.println("<---" + jwsObject.getParsedString());
 		
 		JWSHeader header = jwsObject.getHeader();
 		
-		System.out.println(header);
+		//System.out.println(header);
 		
 		Payload paylod=jwsObject.getPayload();
 		
-		System.out.println(paylod);
+		//System.out.println(paylod);
 		
 		State state = jwsObject.getState();
 		
-		System.out.println(state);
+		//System.out.println(state);
 		
-		Base64URL[] base54 = jwsObject.getParsedParts();
-		for (int i = 0; i < base54.length; i++) {
-			Base64URL base = base54[i];
-			System.out.println(base.toJSONString());
-		}
+//		Base64URL[] base54 = jwsObject.getParsedParts();
+//		for (int i = 0; i < base54.length; i++) {
+//			Base64URL base = base54[i];
+//			System.out.println(base.toJSONString());
+//		}
 		
+		jwspojo jwspojo = new jwspojo();
+		
+		jwspojo.setSerialize(jwsObject.serialize());
+		jwspojo.setSignature(jwsObject.getSignature().toString());
+		jwspojo.setState(jwsObject.getState().name());
+		//jwspojo.setPrivateKey(Utils.toPem(kp));
+		//jwspojo.setPublicKey(Utils.toPem(kp.getPublic()));
+		jwspojo.setHeader(header.toString());
+		
+		return jwspojo;
 		
 
-		JWSVerifier verifier = new RSASSAVerifier(pub1);
+		//JWSVerifier verifier = new RSASSAVerifier(pub1);
 
-		System.out.println(jwsObject.verify(verifier));
+		//System.out.println(jwsObject.verify(verifier));
 	}
 
 	private static RSAKey make(Integer keySize, KeyUse keyUse, Algorithm keyAlg, String kid) {
