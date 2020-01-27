@@ -145,6 +145,9 @@ public class JWS {
 		//rsaVerifier(rsaPrivatekey,"PS384",pp);
 		JWS jws  = new JWS();
 		System.out.println(jws.deterMineObjectAndVerify(null, null, serialized, null, null, pubKey));
+		
+		jws.parserJWSObject("eyJhbGciOiJIUzI1NiJ9.ew0KICAic3ViIjogIjEyMzQ1Njc4OTAiLA0KICAibmFtZSI6ICJBbmlzaCBOYXRoIiwNCiAgImlhdCI6IDE1MTYyMzkwMjINCn0.9tFLrurxXWKBDh317ly24fP03We-uzSZtPf7Yqy_oSw");
+		
 	//	System.out.println(jws.deterMineObjectAndSign(ecKey,"ES384",pp));
 		String[] arr = new String[]{"HS256","HS384","HS512","RS256","RS384","RS512","PS256","PS384","PS512","ES256","ES384","ES512"};
 		//System.out.println(jws.generateKey("ES256",pp));
@@ -155,6 +158,22 @@ public class JWS {
 			break;
 		}
 
+	}
+	
+	public jwspojo parserJWSObject(final String serialzed ) throws Exception
+	{
+		jwspojo jwspojo = new jwspojo();
+		JWSObject jwsObject = JWSObject.parse(serialzed);
+		jwspojo.setHeader(jwsObject.getHeader().toString());
+		jwspojo.setPayload(jwsObject.getPayload().toString());
+		jwspojo.setSignature(jwsObject.getSignature().toString());
+		jwspojo.setState(jwsObject.getState().toString());
+		
+		
+		//System.out.println(jwspojo);
+		
+		return jwspojo;
+		
 	}
 	
 	public  boolean deterMineObjectAndVerify(final String sharedsecret,String singature, String serialzed, String algo,String payload, String publickey) throws Exception {
