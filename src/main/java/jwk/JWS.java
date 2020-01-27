@@ -18,6 +18,7 @@ import java.text.ParseException;
 import java.util.UUID;
 
 import org.bouncycastle.jcajce.provider.asymmetric.ec.BCECPrivateKey;
+import org.bouncycastle.jcajce.provider.asymmetric.ec.BCECPublicKey;
 import org.bouncycastle.jcajce.provider.asymmetric.rsa.BCRSAPrivateCrtKey;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.jce.spec.ECNamedCurveSpec;
@@ -141,20 +142,25 @@ public class JWS {
 	                "AWKRJt9SsNI5wK5nq0A=\n" +
 	                "-----END PUBLIC KEY-----";
 		
-		
+		System.out.println(pubKey);
 		//rsaVerifier(rsaPrivatekey,"PS384",pp);
 		JWS jws  = new JWS();
-		System.out.println(jws.deterMineObjectAndVerify(null, null, serialized, null, null, pubKey));
+		//System.out.println(jws.deterMineObjectAndVerify( null, serialized,  pubKey));
 		
-		jws.parserJWSObject("eyJhbGciOiJIUzI1NiJ9.ew0KICAic3ViIjogIjEyMzQ1Njc4OTAiLA0KICAibmFtZSI6ICJBbmlzaCBOYXRoIiwNCiAgImlhdCI6IDE1MTYyMzkwMjINCn0.9tFLrurxXWKBDh317ly24fP03We-uzSZtPf7Yqy_oSw");
+		//jws.parserJWSObject("eyJhbGciOiJIUzI1NiJ9.ew0KICAic3ViIjogIjEyMzQ1Njc4OTAiLA0KICAibmFtZSI6ICJBbmlzaCBOYXRoIiwNCiAgImlhdCI6IDE1MTYyMzkwMjINCn0.9tFLrurxXWKBDh317ly24fP03We-uzSZtPf7Yqy_oSw");
 		
 	//	System.out.println(jws.deterMineObjectAndSign(ecKey,"ES384",pp));
 		String[] arr = new String[]{"HS256","HS384","HS512","RS256","RS384","RS512","PS256","PS384","PS512","ES256","ES384","ES512"};
 		//System.out.println(jws.generateKey("ES256",pp));
 		//System.out.println(jws.generateKey("ES384",pp));
 		//System.out.println(jws.generateKey("ES512",pp));
+		jwspojo jwsp =  jws.generateKey("ES512",pp);
+		System.out.println(jwsp.getSerialize());
+		System.out.println(jws.verifySignature(null,jwsp.getSerialize(),jwsp.getPublicKey()));
 		for (int i = 0; i < arr.length; i++) {
-		//	System.out.println(jws.generateKey("ES384",pp));
+			
+			//System.out.println();
+			//System.out.println();
 			break;
 		}
 
@@ -176,25 +182,105 @@ public class JWS {
 		
 	}
 	
-	public  boolean deterMineObjectAndVerify(final String sharedsecret,String singature, String serialzed, String algo,String payload, String publickey) throws Exception {
+	public  boolean verifySignature(final String sharedsecret, String serialzed,String publickey) throws Exception {
 		
-		JWSObject jwsObject = JWSObject.parse(serialzed);
 		boolean isValid = false;
-		if(sharedsecret!=null)
+		JWSObject jwsObject = JWSObject.parse(serialzed);
+		
+		JWSHeader header = jwsObject.getHeader();
+		
+		if(header==null)
 		{
-			JWSVerifier verifier = new MACVerifier(sharedsecret);
-			isValid = jwsObject.verify(verifier);
+			throw new Exception("Failed to determine the JWS Header checked the seriazed Object");
 		}
 		
-		System.out.println(jwsObject.getPayload().toString());
 		
 		
-		PemParser pem = new PemParser();
-		Object obj = pem.parsePemFileObject(publickey);
+		JWSAlgorithm algorithm = header.getAlgorithm();
 		
-		System.out.println(obj.getClass());
+		if(algorithm.getName()==null)
+		{
+			throw new Exception("Failed to determine the JWS Header checked the seriazed Object");
+		}
 		
+		String algo = algorithm.getName();
 		
+		if(algo.equalsIgnoreCase("HS256") || algo.equalsIgnoreCase("HS384") || algo.equalsIgnoreCase("HS512"))
+		{
+			if(sharedsecret==null)
+			{
+				throw new Exception("Please Input the shared secret for the Singature validation");
+			}
+			
+			
+			if(sharedsecret!=null)
+			{
+				JWSVerifier verifier = new MACVerifier(sharedsecret);
+				isValid = jwsObject.verify(verifier);
+				return isValid;
+			}
+		}
+		else{
+			
+			if(null==publickey || publickey.trim().length()==0)
+			{
+				throw new Exception("PUBLIC key needed Singature validation the Signature algorithm is " +algo);
+			}
+			
+	
+			
+			
+			
+			
+			PemParser pem = new PemParser();
+			Object obj = pem.parsePemFileObject(publickey);
+			
+			if(obj instanceof org.bouncycastle.jcajce.provider.asymmetric.ec.BCECPublicKey)
+			{
+				PublicKey bcecPublicKey = (BCECPublicKey)obj;
+				//System.out.println(Utils.toPem(bcecPublicKey));
+				
+				try{
+					
+					if(algo.equalsIgnoreCase("RS256") || algo.equalsIgnoreCase("RS384") 
+							|| algo.equalsIgnoreCase("RS512") 
+							|| algo.equalsIgnoreCase("PS256") 
+							|| algo.equalsIgnoreCase("PS384") 
+							|| algo.equalsIgnoreCase("PS512") )
+					{
+					
+					
+					JWSVerifier verifier = new RSASSAVerifier((RSAPublicKey)bcecPublicKey);
+					isValid = jwsObject.verify(verifier);
+					
+					return isValid;
+					}
+					
+					if(algo.equalsIgnoreCase("ES256") || algo.equalsIgnoreCase("ES384") || algo.equalsIgnoreCase("ES512") ) 
+					{
+						JWSVerifier verifier = new ECDSAVerifier((ECPublicKey)bcecPublicKey);
+						isValid = jwsObject.verify(verifier);
+						return isValid;
+					}
+					
+					
+					
+					
+				}catch(Exception ex)
+				{
+					
+					throw new Exception(ex);
+					
+				}
+				
+			}
+			else{
+				throw new Exception("PUBLIC key needed Singature validation the singature algorithm is" +algo);
+			}
+			
+			
+			
+		}
 		return isValid;
 		
 	}
@@ -262,7 +348,7 @@ public class JWS {
 			return deterMineObjectAndSign(privatekey, algo, payload);
 		}
 		
-		
+		//System.out.println(jwspojo.getPublicKey());
 		
 		return jwspojo;
 		
@@ -556,7 +642,7 @@ public class JWS {
 		String pp = "{\n" + "  \"sub\": \"1234567890\",\n" + "  \"name\": \"John Doe\",\n" + "  \"iat\": 1516239022\n"
 				+ "}";
 
-		System.out.println(Utils.toBase64Encode(sharedSecret));
+		//System.out.println(Utils.toBase64Encode(sharedSecret));
 
 		// Create HMAC signer
 		JWSSigner signer = new MACSigner(sharedSecret);
@@ -571,16 +657,16 @@ public class JWS {
 		// eyJhbGciOiJIUzI1NiJ9.SGVsbG8sIHdvcmxkIQ.onO9Ihudz3WkiauDO2Uhyuz0Y18UASXlSc1eS0NkWyA
 		String s = jwsObject.serialize();
 
-		System.out.println(s);
+		//System.out.println(s);
 
 		// To parse the JWS and verify it, e.g. on client-side
 		jwsObject = JWSObject.parse(s);
 
 		JWSVerifier verifier = new MACVerifier(sharedSecret);
 
-		System.out.println(jwsObject.verify(verifier));
+		//System.out.println(jwsObject.verify(verifier));
 
-		System.out.println(jwsObject.getPayload().toString());
+		//System.out.println(jwsObject.getPayload().toString());
 	}
 
 }
