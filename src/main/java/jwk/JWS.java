@@ -44,6 +44,7 @@ import com.nimbusds.jose.jwk.ECKey;
 import com.nimbusds.jose.jwk.KeyUse;
 import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jose.util.Base64URL;
+import com.nimbusds.jwt.EncryptedJWT;
 
 import cacerts.Utils;
 import pem.PemParser;
@@ -169,14 +170,83 @@ public class JWS {
 	public jwspojo parserJWSObject(final String serialzed ) throws Exception
 	{
 		jwspojo jwspojo = new jwspojo();
-		JWSObject jwsObject = JWSObject.parse(serialzed);
-		jwspojo.setHeader(jwsObject.getHeader().toString());
-		jwspojo.setPayload(jwsObject.getPayload().toString());
-		jwspojo.setSignature(jwsObject.getSignature().toString());
-		jwspojo.setState(jwsObject.getState().toString());
+		JWSObject jwsObject = null;
+		try{
+		 jwsObject = JWSObject.parse(serialzed);
+		 jwspojo.setHeader(jwsObject.getHeader().toString());
+		 jwspojo.setPayload(jwsObject.getPayload().toString());
+		 jwspojo.setSignature(jwsObject.getSignature().toString());
+		 jwspojo.setState(jwsObject.getState().toString());
+		}catch (ParseException pe)
+		{
+			//Check is this Encrypted JWS
+			try {
+				
+				EncryptedJWT encryptedJWT = EncryptedJWT.parse(serialzed);
+			//	Base64URL[] base64urls = encryptedJWT.getParsedParts();
+//				for (int i = 0; i < base64urls.length; i++) {
+//					System.out.println("i-->" + i + " " + base64urls[i].decodeToString());
+//				}
+				
+				if(encryptedJWT.getPayload()!=null)
+				{
+					jwspojo.setPayload(encryptedJWT.getPayload().toString());
+				}
+				if(encryptedJWT.getCipherText()!=null)
+				{
+					jwspojo.setCipherText(encryptedJWT.getCipherText().toString());
+				}
+				
+				if(encryptedJWT.getAuthTag()!=null)
+				{
+					jwspojo.setAuthTag(encryptedJWT.getAuthTag().toString());
+				}
+				
+				if(encryptedJWT.getHeader()!=null)
+				{
+				
+					jwspojo.setHeader(encryptedJWT.getHeader().toString());
+				}
+
+				if(encryptedJWT.getEncryptedKey()!=null)
+				{
+					jwspojo.setEncryptedKey(encryptedJWT.getEncryptedKey().toString());
+				}
+				
+				if(encryptedJWT.getIV()!=null)
+				{
+					jwspojo.setIv(encryptedJWT.getIV().toString());
+				}
+				
+				if(encryptedJWT.getJWTClaimsSet()!=null)
+				{
+					jwspojo.setIssuer(encryptedJWT.getJWTClaimsSet().getIssuer());
+					jwspojo.setSubject(encryptedJWT.getJWTClaimsSet().getSubject());
+					jwspojo.setAudienceSize(String.valueOf(encryptedJWT.getJWTClaimsSet().getAudience().size()));
+					jwspojo.setExpirationTime(String.valueOf(encryptedJWT.getJWTClaimsSet().getExpirationTime()));
+					jwspojo.setNotBeforeTime(String.valueOf(encryptedJWT.getJWTClaimsSet().getNotBeforeTime()));
+					jwspojo.setIssueTime(String.valueOf(encryptedJWT.getJWTClaimsSet().getIssueTime()));
+					jwspojo.setJwtid(encryptedJWT.getJWTClaimsSet().getJWTID());
+				}
+				
+				if(encryptedJWT.getState()!=null)
+				{
+					jwspojo.setState(encryptedJWT.getState().toString());
+				}
+				
+				return jwspojo;
+					
+				
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				throw new Exception(pe);
+			}
+			
+		}
 		
 		
-		//System.out.println(jwspojo);
+		
+	//	System.out.println(jwspojo);
 		
 		return jwspojo;
 		
