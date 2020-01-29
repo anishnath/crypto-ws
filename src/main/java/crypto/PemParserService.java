@@ -20,6 +20,7 @@ import com.google.gson.Gson;
 
 import crack.EncryptedPemCracker;
 import pem.PemParser;
+import pem.PkcsKeyConversion;
 import pojo.EncodedMessage;
 
 @Path("/pem")
@@ -111,7 +112,7 @@ public class PemParserService {
 
 		if (msg == null || msg.trim().length() == 0) {
 			return Response.status(Response.Status.NOT_FOUND)
-					.entity(String.format("p_msg %s does not have a Pem Message", msg)).build();
+					.entity(String.format("p_pem %s does not have a Pem Message", msg)).build();
 		}
 
 		PemParser parser = new PemParser();
@@ -128,6 +129,40 @@ public class PemParserService {
 			return Response.status(Response.Status.NOT_FOUND).entity(String.format("Error Performing Parsing %s ", e))
 					.build();
 		}
+	}
+	
+	@POST
+	@Path("/topkcs")
+	@Produces({ "application/json" })
+	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+	public Response toPKCS8(@FormParam("p_pem") String msg,@FormParam("p_password") String password) {
+
+		if (msg == null || msg.trim().length() == 0) {
+			return Response.status(Response.Status.NOT_FOUND)
+					.entity(String.format("p_pem %s does not have a Pem Message", msg)).build();
+		}
+		
+		if(msg.contains("PRIVATE"))
+		{
+
+		PkcsKeyConversion parser = new PkcsKeyConversion();
+		try {
+			String message = parser.deterMineObjectAndSign(msg, password);
+			EncodedMessage encodedMessage = new EncodedMessage();
+			encodedMessage.setMessage(message.toString());
+			Gson gson = new Gson();
+			String json = gson.toJson(encodedMessage, EncodedMessage.class);
+			return Response.status(200).entity(json).build();
+
+		} catch (Exception e) {
+			e.printStackTrace();
+			return Response.status(Response.Status.NOT_FOUND).entity(String.format("Error Performing Parsing %s ", e))
+					.build();
+		}
+		}
+		
+		return Response.status(Response.Status.NOT_FOUND)
+				.entity(String.format("p_pem %s does not have a Pem Message", msg)).build();
 	}
 
 	@POST
