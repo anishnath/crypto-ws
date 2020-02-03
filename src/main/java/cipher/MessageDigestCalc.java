@@ -46,6 +46,27 @@ public class MessageDigestCalc {
 		return encodedMessage;
 
 	}
+	
+	public static byte[] calculateMessageDigest(String algo, final byte[] message) throws Exception {
+		
+		if (null == algo || algo.trim().length() == 0) {
+			throw new Exception("Message Digest Algo is Null or Empty");
+		}
+		
+		byte[] mdbytes=null;
+		try {
+
+			MessageDigest md = MessageDigest.getInstance(algo);
+			md.update(message);
+			mdbytes = md.digest();
+			
+		} catch (Exception e) {
+			throw new Exception(e);
+		}
+
+		return mdbytes;
+
+	}
 
 	static {
 		Security.addProvider(new BouncyCastleProvider());
