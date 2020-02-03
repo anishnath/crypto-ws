@@ -261,7 +261,7 @@ public class PemParse2 {
 						+ cert.getSerialNumber() + ")");
 				x509pojo.setSigAlgName(cert.getSigAlgName() + "(" + cert.getSigAlgOID() + ")");
 				x509pojo.setNotBefore(String.valueOf(cert.getNotBefore()));
-				x509pojo.setNotAfter(String.valueOf(cert.getNotBefore()));
+				x509pojo.setNotAfter(String.valueOf(cert.getNotAfter()));
 				if (cert.getSubjectDN() != null) {
 					x509pojo.setSubjectDN(cert.getSubjectDN().getName());
 				}
