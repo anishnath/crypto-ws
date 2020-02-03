@@ -303,5 +303,42 @@ public class Utils {
 			return null;
 		}
 	}
+	
+	public static String encodeHex(byte[] by,final String deliminater)
+	{
+	     char[]  actual = Hex.encodeHex(by);
+	      
+	     return addDeliminater(new String(actual),deliminater);
+	}
+	
+	private static String addDeliminater(final String hexValue ,final String deliminater)
+	{
+		StringBuilder builder = new StringBuilder();
+		String tempValue = hexValue;
+		if(tempValue!=null && !tempValue.isEmpty())
+		{
+			tempValue = tempValue.trim();
+			if(tempValue.length()==2)
+				{
+					return tempValue;
+				}
+			char[] ch = tempValue.toCharArray();
+			int j=2;
+			for(int i=0 ;i<tempValue.length();i++)
+			{
+				
+				if(i==j)
+				{
+					builder.append(deliminater);
+					builder.append(ch[i]);
+					j=j+2;
+				}else{
+					builder.append(ch[i]);
+				}
+			}
+			
+		}
+		return builder.toString().toUpperCase();
+	}
 
 }
