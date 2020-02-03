@@ -29,7 +29,7 @@ public enum AttributeTypeType {
 
 	// @formatter:on
 
-	private static ResourceBundle res = ResourceBundle.getBundle("org/kse/crypto/x509/resources");
+	private static ResourceBundle res = ResourceBundle.getBundle("pem/resources");
 	private String oid;
 	private String friendlyKey;
 

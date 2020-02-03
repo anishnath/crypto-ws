@@ -11,7 +11,7 @@ public enum HoldInstructionCodeType {
 	NONE("1.2.840.10040.2.1", "HoldInstructionCodeNone"), CALL_ISSUER("1.2.840.10040.2.2",
 			"HoldInstructionCodeCallIssuer"), CODE_REJECT("1.2.840.10040.2.3", "HoldInstructionCodeReject");
 
-	private static ResourceBundle res = ResourceBundle.getBundle("org/kse/crypto/x509/resources");
+	private static ResourceBundle res = ResourceBundle.getBundle("pem/resources");
 	private String oid;
 	private String friendlyKey;
 

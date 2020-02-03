@@ -11,7 +11,7 @@ public enum ValidityModelType {
 	CHAIN_MODEL("1.3.6.1.4.1.8301.3.5.1", "ChainModel"),
 	SHELL_MODEL("1.3.6.1.4.1.8301.3.5.2", "ShellModel");
 
-	private static ResourceBundle res = ResourceBundle.getBundle("org/kse/crypto/x509/resources");
+	private static ResourceBundle res = ResourceBundle.getBundle("pem/resources");
 	private String oid;
 	private String friendlyKey;
 
