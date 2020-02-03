@@ -228,5 +228,36 @@ public class PemParserService {
 					.build();
 		}
 	}
+	
+	@POST
+	@Path("/parsepemv2")
+	@Produces({ "application/json" })
+	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+	public Response parserpem2(@FormParam("p_pem") String msg, @FormParam("p_password") String password) {
+
+		if (msg == null || msg.trim().length() == 0) {
+			return Response.status(Response.Status.NOT_FOUND)
+					.entity(String.format("p_msg %s does not have a Pem Message", msg)).build();
+		}
+
+		if (msg.contains("ENCRYPTED")) {
+			if (null == password || password.trim().length() == 0) {
+				return Response.status(Response.Status.NOT_FOUND)
+						.entity(String.format("p_password %s Password Required to Parser the Pem Message ", password))
+						.build();
+			}
+		}
+		PemParse2 parser = new PemParse2();
+		try {
+			EncodedMessage message = parser.parsePemFile(msg, password);
+			Gson gson = new Gson();
+			String json = gson.toJson(message, EncodedMessage.class);
+			return Response.status(200).entity(json).build();
+
+		} catch (Exception e) {
+			return Response.status(Response.Status.NOT_FOUND).entity(String.format("Error Performing Parsing %s ", e))
+					.build();
+		}
+	}
 
 }
