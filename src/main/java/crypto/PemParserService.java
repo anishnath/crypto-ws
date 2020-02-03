@@ -187,7 +187,7 @@ public class PemParserService {
 			EncodedMessage encodedMessage = new EncodedMessage();
 			encodedMessage.setMessage(message);
 			Gson gson = new Gson();
-			String json = gson.toJson(message, EncodedMessage.class);
+			String json = gson.toJson(encodedMessage, EncodedMessage.class);
 			return Response.status(200).entity(json).build();
 
 		} catch (Exception e) {
@@ -220,7 +220,7 @@ public class PemParserService {
 			EncodedMessage encodedMessage = new EncodedMessage();
 			encodedMessage.setMessage(message);
 			Gson gson = new Gson();
-			String json = gson.toJson(message, EncodedMessage.class);
+			String json = gson.toJson(encodedMessage, EncodedMessage.class);
 			return Response.status(200).entity(json).build();
 
 		} catch (Exception e) {
