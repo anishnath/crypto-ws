@@ -19,6 +19,7 @@ import javax.ws.rs.core.Response;
 import com.google.gson.Gson;
 
 import crack.EncryptedPemCracker;
+import pem.PemParse2;
 import pem.PemParser;
 import pem.PkcsKeyConversion;
 import pojo.EncodedMessage;
@@ -180,11 +181,11 @@ public class PemParserService {
 			return Response.status(Response.Status.NOT_FOUND)
 					.entity(String.format("p_pem %s is Encryped use Diffrent REST ENDpoint parsepem ", msg)).build();
 		}
-		PemParser parser = new PemParser();
+		PemParse2 parser = new PemParse2();
 		try {
-			String message = parser.parsePemFile(msg);
-			EncodedMessage encodedMessage = new EncodedMessage();
-			encodedMessage.setMessage(message);
+			EncodedMessage message = parser.parsePemFile(msg);
+			//EncodedMessage encodedMessage = new EncodedMessage();
+			//encodedMessage.setMessage(message);
 			Gson gson = new Gson();
 			String json = gson.toJson(message, EncodedMessage.class);
 			return Response.status(200).entity(json).build();
@@ -213,13 +214,13 @@ public class PemParserService {
 						.build();
 			}
 		}
-		PemParser parser = new PemParser();
+		PemParse2 parser = new PemParse2();
 		try {
-			String message = parser.parsePemFile(msg, password);
-			EncodedMessage encodedMessage = new EncodedMessage();
-			encodedMessage.setMessage(message);
+			EncodedMessage message = parser.parsePemFile(msg, password);
+			//EncodedMessage encodedMessage = new EncodedMessage();
+			//encodedMessage.setMessage(message);
 			Gson gson = new Gson();
-			String json = gson.toJson(encodedMessage, EncodedMessage.class);
+			String json = gson.toJson(message, EncodedMessage.class);
 			return Response.status(200).entity(json).build();
 
 		} catch (Exception e) {
