@@ -181,11 +181,11 @@ public class PemParserService {
 			return Response.status(Response.Status.NOT_FOUND)
 					.entity(String.format("p_pem %s is Encryped use Diffrent REST ENDpoint parsepem ", msg)).build();
 		}
-		PemParse2 parser = new PemParse2();
+		PemParser parser = new PemParser();
 		try {
-			EncodedMessage message = parser.parsePemFile(msg);
-			//EncodedMessage encodedMessage = new EncodedMessage();
-			//encodedMessage.setMessage(message);
+			String message = parser.parsePemFile(msg);
+			EncodedMessage encodedMessage = new EncodedMessage();
+			encodedMessage.setMessage(message);
 			Gson gson = new Gson();
 			String json = gson.toJson(message, EncodedMessage.class);
 			return Response.status(200).entity(json).build();
@@ -214,11 +214,11 @@ public class PemParserService {
 						.build();
 			}
 		}
-		PemParse2 parser = new PemParse2();
+		PemParser parser = new PemParser();
 		try {
-			EncodedMessage message = parser.parsePemFile(msg, password);
-			//EncodedMessage encodedMessage = new EncodedMessage();
-			//encodedMessage.setMessage(message);
+			String message = parser.parsePemFile(msg, password);
+			EncodedMessage encodedMessage = new EncodedMessage();
+			encodedMessage.setMessage(message);
 			Gson gson = new Gson();
 			String json = gson.toJson(message, EncodedMessage.class);
 			return Response.status(200).entity(json).build();
