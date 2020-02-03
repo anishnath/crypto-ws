@@ -80,7 +80,11 @@ public class HexUtil {
 	 *             If an I/O problem occurs
 	 */
 	public static String getHexClearDump(byte[] bytes) throws IOException {
-		try (ByteArrayInputStream bais = new ByteArrayInputStream(bytes)) {
+		try 
+		
+		  {
+			
+			ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
 			// Divide dump into 8 byte lines
 			StringBuffer strBuff = new StringBuffer();
 
@@ -100,6 +104,8 @@ public class HexUtil {
 			}
 
 			return strBuff.toString();
+		}catch(IOException ex) {
+			throw new IOException(ex);
 		}
 	}
 
