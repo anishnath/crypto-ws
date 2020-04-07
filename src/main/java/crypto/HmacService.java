@@ -27,10 +27,10 @@ public class HmacService {
 	// {"PBEWithHmacSHA1","PBEWithHmacSHA384","PBEWithHmacSHA256","PBEWithHmacSHA512","HmacSHA1",}
 
 	enum macchoices {
-		PBEWithHmacSHA1, PBEWithHmacSHA384, PBEWithHmacSHA256,
+		PBEWithHmacSHA1, PBEWithHmacSHA384, PBEWithHmacSHA256, 
 		PBEWithHmacSHA512,
 		HmacSHA1, HmacSHA384, HmacSHA224, 
-		HmacSHA256, HmacMD5, HMACRIPEMD128, RC2MAC, IDEAMAC, HMACRIPEMD160, SKIPJACKMAC, HMACTIGER;
+		HmacSHA256, HmacSHA512, HmacMD5, HMACRIPEMD128, RC2MAC, RC5MAC, IDEAMAC, HMACRIPEMD160, SKIPJACKMAC, HMACTIGER,DES,DESEDEMAC,HMACMD5,HMACMD4,HMACMD2,SKIPJACKMACCFB8,IDEAMACCFB8;
 	};
 
 	/**
@@ -66,6 +66,8 @@ public class HmacService {
 					.entity(String.format("param1 %s does not have a valid Algoritms", algo)).build();
 		}
 
+		
+		
 		try {
 			macchoices macchoic;
 			macchoic = macchoices.valueOf(algo);
@@ -78,6 +80,16 @@ public class HmacService {
 					algo)).build();
 		}
 
+		if("SKIPJACKMACCFB8".equals(algo))
+		{
+			algo = "SKIPJACKMAC/CFB8";
+		}
+		
+		if("IDEAMACCFB8".equals(algo))
+		{
+			algo = "IDEAMAC/CFB8";
+		}
+		
 		Hmac mac = new Hmac();
 		byte[] b = mac.calculateHMAC(name, key, algo);
 
