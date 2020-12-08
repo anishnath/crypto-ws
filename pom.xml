@@ -7,6 +7,12 @@
 	<version>1.0.0-FINAL</version>
 	<name>crypto Maven Webapp</name>
 	<url>http://maven.apache.org</url>
+	
+	<properties>
+    <maven.compiler.source>1.8</maven.compiler.source>
+    <maven.compiler.target>1.8</maven.compiler.target>
+  </properties>
+	
 	<dependencies>
 		<dependency>
 			<groupId>junit</groupId>
@@ -133,11 +139,23 @@
   <version>1.1.2</version>
 </dependency> -->
 
-   <dependency>
+<dependency>
+        <groupId>com.google.zxing</groupId>
+        <artifactId>core</artifactId>
+        <version>3.3.0</version>
+    </dependency>
+    <dependency>
+        <groupId>com.google.zxing</groupId>
+        <artifactId>javase</artifactId>
+        <version>3.3.0</version>
+    </dependency>
+    
+    <dependency>
   <groupId>com.macasaet.fernet</groupId>
   <artifactId>fernet-java8</artifactId>
   <version>1.4.2</version>
 </dependency>
+    
 
 	</dependencies>
 	<build>
