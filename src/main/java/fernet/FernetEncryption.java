@@ -14,7 +14,7 @@ import com.macasaet.fernet.StringValidator;
 import com.macasaet.fernet.Token;
 import com.macasaet.fernet.Validator;
 
-import jdk.internal.dynalink.linker.LinkerServices.Implementation;
+
 import pojo.fernetpojo;
 
 /**
@@ -23,7 +23,7 @@ import pojo.fernetpojo;
  *
  */
 
-public class FernetEncryption implements Validator {
+public class FernetEncryption {
 	
 	
 	
@@ -130,10 +130,4 @@ public class FernetEncryption implements Validator {
   
         return (stringValue); 
     }
-
-	@Override
-	public Function getTransformer() {
-		// TODO Auto-generated method stub
-		return null;
-	} 
 }
