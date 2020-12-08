@@ -15,6 +15,12 @@ import com.macasaet.fernet.Validator;
 
 import pojo.fernetpojo;
 
+/**
+ * 
+ * @author anishnath
+ *
+ */
+
 public class FernetEncryption {
 	
 	
