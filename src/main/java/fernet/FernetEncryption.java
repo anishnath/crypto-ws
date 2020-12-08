@@ -29,11 +29,11 @@ public class FernetEncryption {
 		Security.addProvider(new BouncyCastleProvider());
 	}
 	
-	static final Validator<String> validator = new StringValidator() {
-		public TemporalAmount getTimeToLive() {
-	        return Duration.ofSeconds(Instant.MAX.getEpochSecond());
-	    }
-    };
+//	static final Validator<String> validator = new StringValidator() {
+//		public TemporalAmount getTimeToLive() {
+//	        return Duration.ofSeconds(Instant.MAX.getEpochSecond());
+//	    }
+//    };
     
     public String generateKey()
     {
@@ -76,7 +76,11 @@ public class FernetEncryption {
 			throw new Exception("Inavlid Fernet Keys");
 		}
 		Token token  = Token.fromString(fToken);
-		String decrypttoken = token.validateAndDecrypt(key, validator);
+		String decrypttoken = token.validateAndDecrypt(key, new StringValidator() {
+			  public TemporalAmount getTimeToLive() {
+				    return Duration.ofHours(4);
+				  }
+				});
 		
 		return decrypttoken;
 		
