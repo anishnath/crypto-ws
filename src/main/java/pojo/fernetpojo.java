@@ -2,6 +2,11 @@ package pojo;
 
 import com.google.gson.Gson;
 
+/**
+ * 
+ * @author anishnath
+ *
+ */
 public class fernetpojo {
 	
 
