@@ -1,5 +1,7 @@
 package crypto;
 
+import java.util.List;
+
 import javax.ws.rs.Consumes;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.POST;
@@ -10,6 +12,8 @@ import javax.ws.rs.core.Response;
 
 import com.google.gson.Gson;
 
+
+import cacerts.WebCerts;
 import pem.CertInfo;
 import pem.CertificateVerifier;
 import pem.PemParser;
@@ -42,6 +46,58 @@ public class CertService {
 			encodedMessage.setBase64Decoded(base64Decoded);
 			Gson gson = new Gson();
 			String json = gson.toJson(encodedMessage,EncodedMessage.class);
+			return Response.status(200).entity(json).build();
+			
+		} catch (Exception e) {
+			return Response.status(Response.Status.NOT_FOUND)
+					.entity(String.format("Error Performing Parsing %s ", e)).build();
+		}
+	}
+	
+	
+	
+	@POST
+	@Path("/webcerts")
+	@Produces({ "application/json" })
+	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+	public Response getWebCerts(@FormParam("p_url") String url,@FormParam("p_port") String port) {
+		
+		int Port = 443;
+		
+		if(null == port || port.trim().length()==0)
+		{
+			port = "443";
+		}
+		
+		if(null == url || url.trim().length()==0)
+		{
+			return Response.status(Response.Status.NOT_FOUND)
+					.entity(String.format("p_url %s Please provide the url", url)).build();
+		}
+		
+		url = url.trim();
+		
+		if(url.equalsIgnoreCase("::0") || url.equalsIgnoreCase("localhost") || url.startsWith("127.0") || url.equals("2130706433") ||  url.startsWith("localhost")  )
+		{
+			return Response.status(Response.Status.NOT_FOUND)
+					.entity(String.format("p_url %s Connection Timedout", url)).build();
+		}
+		
+		if (port != null && port.trim().length() > 0) {
+			try {
+				Port = Integer.valueOf(Port);
+			} catch (NumberFormatException e) {
+				// TODO Auto-generated catch block
+				Port = 443;
+			}
+		}
+		
+		WebCerts webcerts = new WebCerts();
+
+		try {
+			List<String> certList =  webcerts.getCerts(url, Port);
+			Gson gson = new Gson();
+			String json = gson.toJson(certList);
 			return Response.status(200).entity(json).build();
 			
 		} catch (Exception e) {
