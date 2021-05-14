@@ -11,6 +11,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.sun.jersey.core.header.FormDataContentDisposition;
 import com.sun.jersey.multipart.FormDataParam;
 
@@ -110,7 +111,7 @@ public class PGPService {
 			PGPEncryptionDecryption encryptionDecryption = new PGPEncryptionDecryption();
 			try {
 				final String s = encryptionDecryption.encryptMsg(msg, publicKey, true, true);
-				Gson gson = new Gson();
+				Gson gson = new GsonBuilder().disableHtmlEscaping().create();
 				String json = gson.toJson(s);
 				return Response.status(200).entity(json).build();
 
@@ -163,7 +164,7 @@ public class PGPService {
 			PGPEncryptionDecryption encryptionDecryption = new PGPEncryptionDecryption();
 			try {
 				final String s = encryptionDecryption.decryptMsg(msg, privateKey, passPhrase.toCharArray());
-				Gson gson = new Gson();
+				Gson gson = new GsonBuilder().disableHtmlEscaping().create();
 				String json = gson.toJson(s);
 				return Response.status(200).entity(json).build();
 
