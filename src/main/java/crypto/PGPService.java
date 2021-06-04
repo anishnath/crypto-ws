@@ -15,6 +15,7 @@ import com.google.gson.GsonBuilder;
 import com.sun.jersey.core.header.FormDataContentDisposition;
 import com.sun.jersey.multipart.FormDataParam;
 
+import pgp.PGPDump;
 import pgp.PGPEncryptionDecryption;
 import pgp.PGPRSAKeyPairGenerator;
 import pgp.VerifyAndSignedFileProcessor;
@@ -180,6 +181,58 @@ public class PGPService {
 					.build();
 		}
 	
+	}
+	
+	@POST
+	@Path("/pgpdump")
+	@Produces({ "application/json" })
+	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+	public Response pgpDump(@FormParam("p_msg") String msg) {
+
+		if (msg == null || msg.trim().length() == 0) {
+			return Response.status(Response.Status.NOT_FOUND)
+					.entity(String.format("param1 %s does not have a pgp keys to dump", msg)).build();
+		}
+		
+		boolean isValid=false;
+		
+		if(msg.contains("BEGIN PGP MESSAGE") && msg.contains("END PGP MESSAGE"))
+		{
+			isValid=true;
+		}
+		
+		if(!isValid)
+		{
+			if (msg.contains("BEGIN PGP PRIVATE KEY BLOCK") && msg.contains("END PGP PRIVATE KEY BLOCK")) 
+			{
+				isValid=true;
+			}
+		}
+		
+		if(!isValid)
+		{
+			if (msg.contains("BEGIN PGP PUBLIC KEY BLOCK") && msg.contains("END PGP PUBLIC KEY BLOCK"))  
+			{
+				isValid=true;
+			}
+		}
+		
+		if(!isValid) {
+			return Response.status(Response.Status.NOT_FOUND)
+					.entity(String.format("param1 %s Please input a valid PGP keys", msg)).build();
+		}
+		
+	   PGPDump pgpDump = new PGPDump();
+		try 
+		{
+			final String s = pgpDump.parsePGP(msg);
+			Gson gson = new GsonBuilder().disableHtmlEscaping().create();
+			String json = gson.toJson(s);
+			return Response.status(200).entity(json).build();
+			} 
+		catch (Exception ex) {
+			return Response.status(Response.Status.NOT_FOUND).entity(String.format("param1 %s Exception Occur During Processing", ex)).build();
+		}
 	}
 
 	@POST
