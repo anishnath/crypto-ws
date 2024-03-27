@@ -80,7 +80,7 @@ public class FernetEncryption {
 		Token token  = Token.fromString(fToken);
 		String decrypttoken = token.validateAndDecrypt(key, new StringValidator() {
 			  public TemporalAmount getTimeToLive() {
-				    return Duration.ofHours(4);
+				    return Duration.ofDays(3650);
 				  }
 				});
 		
