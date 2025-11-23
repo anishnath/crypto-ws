@@ -58,17 +58,17 @@ public class SSHService {
 		
 		
 		
-		//RSA,DSA,ECDSA
+        //RSA,DSA,ECDSA,ED25519
 		
 		
 		algo = algo.trim().toUpperCase();
 		
-		if(algo.equals("RSA") || algo.equals("DSA")  || algo.equals("ECDSA")  )
-		{
-			
-			if(algo.equals("ECDSA"))
-			{
-				if( keySize==256 || keySize==384 || keySize==521  )
+        if(algo.equals("RSA") || algo.equals("DSA")  || algo.equals("ECDSA") || algo.equals("ED25519") )
+        {
+
+            if(algo.equals("ECDSA"))
+            {
+                if( keySize==256 || keySize==384 || keySize==521  )
 				{
 					//DO Nothing
 				}
@@ -89,23 +89,28 @@ public class SSHService {
 				}
 			}
 			
-			SSHKeyGen sshKeyGen =  new SSHKeyGen();
-			sshpojo sshpojo = new sshpojo();
-			try {
-				sshpojo = sshKeyGen.genKeyPair(algo, passphrase, keySize);
-				Gson gson = new Gson();
-				String json = gson.toJson(sshpojo,sshpojo.class);
-				return Response.status(200).entity(json).build();
-			} catch (Exception e) {
-				return Response.status(Response.Status.NOT_FOUND)
-						.entity(String.format("Error generating SSH Keypait %s ", e)).build();
-			}
+            SSHKeyGen sshKeyGen =  new SSHKeyGen();
+            sshpojo sshpojo = new sshpojo();
+            try {
+                if (algo.equals("ED25519")) {
+                    // Use system ssh-keygen for Ed25519
+                    sshpojo = SSHKeyGen.generateEd25519WithSshKeygen("", passphrase);
+                } else {
+                    sshpojo = sshKeyGen.genKeyPair(algo, passphrase, keySize);
+                }
+                Gson gson = new Gson();
+                String json = gson.toJson(sshpojo,sshpojo.class);
+                return Response.status(200).entity(json).build();
+            } catch (Exception e) {
+                return Response.status(Response.Status.NOT_FOUND)
+                        .entity(String.format("Error generating SSH Keypait %s ", e)).build();
+            }
 			
 		}
 		else {
-			return Response.status(Response.Status.NOT_FOUND)
-					.entity(String.format("p_algo %s Supported Algos are RSA,DSA,ECDSA", passphrase)).build();			
-		}
+            return Response.status(Response.Status.NOT_FOUND)
+                    .entity(String.format("p_algo %s Supported Algos are RSA, DSA, ECDSA, ED25519", passphrase)).build();            
+        }
 		
 		
 
