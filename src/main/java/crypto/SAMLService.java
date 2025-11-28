@@ -17,6 +17,10 @@ import javax.xml.XMLConstants;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
+import java.util.zip.Deflater;
+import java.util.zip.DeflaterOutputStream;
 
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXNotRecognizedException;
@@ -287,6 +291,60 @@ public class SAMLService {
 					.entity(String.format("Error on encode %s ", e)).build();
 		}
 		
+	}
+
+	@POST
+	@Path("/deflateEncode")
+	@Produces({ "application/json" })
+	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+	public Response deflateEncode(@FormParam("p_b64xml") String base64Xml) {
+
+		if (base64Xml == null || base64Xml.trim().isEmpty()) {
+			return Response.status(Response.Status.NOT_FOUND)
+					.entity(String.format("p_b64xml %s Please input Base64-encoded XML", base64Xml)).build();
+		}
+
+		String xml;
+		try {
+			byte[] decoded = Base64.getMimeDecoder().decode(base64Xml.trim());
+			xml = new String(decoded, StandardCharsets.UTF_8);
+		} catch (IllegalArgumentException e) {
+			return Response.status(Response.Status.NOT_FOUND)
+					.entity("p_b64xml is not valid Base64").build();
+		}
+
+		// XXE-safe parse to validate XML (disallow DOCTYPE and external entities)
+		try {
+			SAXParserFactory spf = SAXParserFactory.newInstance();
+			spf.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+			try { spf.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true); } catch (ParserConfigurationException | SAXNotRecognizedException | SAXNotSupportedException ignore) {}
+			try { spf.setFeature("http://xml.org/sax/features/external-general-entities", false); } catch (ParserConfigurationException | SAXNotRecognizedException | SAXNotSupportedException ignore) {}
+			try { spf.setFeature("http://xml.org/sax/features/external-parameter-entities", false); } catch (ParserConfigurationException | SAXNotRecognizedException | SAXNotSupportedException ignore) {}
+			try { spf.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false); } catch (ParserConfigurationException | SAXNotRecognizedException | SAXNotSupportedException ignore) {}
+			spf.setXIncludeAware(false);
+			SAXParser saxParser = spf.newSAXParser();
+			InputStream stream = new ByteArrayInputStream(xml.getBytes(StandardCharsets.UTF_8));
+			saxParser.parse(stream, new DefaultHandler());
+		} catch (Exception e) {
+			return Response.status(Response.Status.NOT_FOUND)
+					.entity(String.format("Invalid or unsafe XML: %s", e.getMessage())).build();
+		}
+
+		// Deflate (raw, no ZLIB header) then Base64-encode
+		try {
+			byte[] input = xml.getBytes(StandardCharsets.UTF_8);
+			java.io.ByteArrayOutputStream bos = new java.io.ByteArrayOutputStream();
+			Deflater deflater = new Deflater(Deflater.DEFAULT_COMPRESSION, true);
+			try (DeflaterOutputStream dos = new DeflaterOutputStream(bos, deflater, true)) {
+				dos.write(input);
+			}
+			String encoded = Base64.getEncoder().encodeToString(bos.toByteArray());
+			Gson gson = new Gson();
+			return Response.status(200).entity(gson.toJson(encoded)).build();
+		} catch (Exception e) {
+			return Response.status(Response.Status.NOT_FOUND)
+					.entity(String.format("Error deflating/encoding XML %s", e.getMessage())).build();
+		}
 	}
 
 }
