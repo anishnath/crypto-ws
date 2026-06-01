@@ -8,6 +8,7 @@ public class sshpojo implements Serializable {
 	
 	private String publicKey;
 	private String privateKey;
+	private String privateKeyPpk;
 	private String algo;
 	private String fingerprint;
 	private int keySize;
@@ -34,6 +35,18 @@ public class sshpojo implements Serializable {
 
 	public void setPrivateKey(String privateKey) {
 		this.privateKey = privateKey;
+	}
+
+
+
+	public String getPrivateKeyPpk() {
+		return privateKeyPpk;
+	}
+
+
+
+	public void setPrivateKeyPpk(String privateKeyPpk) {
+		this.privateKeyPpk = privateKeyPpk;
 	}
 
 
@@ -83,6 +96,7 @@ public class sshpojo implements Serializable {
 		result = prime * result + ((fingerprint == null) ? 0 : fingerprint.hashCode());
 		result = prime * result + keySize;
 		result = prime * result + ((privateKey == null) ? 0 : privateKey.hashCode());
+		result = prime * result + ((privateKeyPpk == null) ? 0 : privateKeyPpk.hashCode());
 		result = prime * result + ((publicKey == null) ? 0 : publicKey.hashCode());
 		return result;
 	}
@@ -114,6 +128,11 @@ public class sshpojo implements Serializable {
 			if (other.privateKey != null)
 				return false;
 		} else if (!privateKey.equals(other.privateKey))
+			return false;
+		if (privateKeyPpk == null) {
+			if (other.privateKeyPpk != null)
+				return false;
+		} else if (!privateKeyPpk.equals(other.privateKeyPpk))
 			return false;
 		if (publicKey == null) {
 			if (other.publicKey != null)
